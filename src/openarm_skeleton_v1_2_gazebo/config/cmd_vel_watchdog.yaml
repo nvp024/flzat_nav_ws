@@ -1,0 +1,6 @@
+cmd_vel_watchdog:
+  ros__parameters:
+    command_timeout: 0.50
+    publish_rate: 20.0
+    input_topic: /cmd_vel
+    output_topic: /cmd_vel_safe

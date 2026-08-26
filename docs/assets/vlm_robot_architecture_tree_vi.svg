@@ -1,0 +1,307 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" width="2560" height="1440" viewBox="0 0 2560 1440"
+     role="img" aria-labelledby="figure-title figure-description">
+  <title id="figure-title">Kiến trúc phân tầng VLM cho mobile dual-arm OpenArm</title>
+  <desc id="figure-description">
+    Sơ đồ kiến trúc khoa học gồm observation plane, decision and execution plane, assurance plane.
+    Luồng chính đi từ MissionRequest qua VLM Grounder, Hybrid Task Planner, Skill Executive,
+    MoveIt hoặc ACT, Action Guard, ROS 2 Controller đến MuJoCo, Gazebo hoặc robot thật.
+  </desc>
+
+  <defs>
+    <marker id="arrow-command" markerWidth="12" markerHeight="12" refX="10" refY="6"
+            orient="auto" markerUnits="strokeWidth">
+      <path d="M0,0 L12,6 L0,12 Z" fill="#334155"/>
+    </marker>
+    <marker id="arrow-state" markerWidth="12" markerHeight="12" refX="10" refY="6"
+            orient="auto" markerUnits="strokeWidth">
+      <path d="M0,0 L12,6 L0,12 Z" fill="#0f766e"/>
+    </marker>
+    <marker id="arrow-capability" markerWidth="12" markerHeight="12" refX="10" refY="6"
+            orient="auto" markerUnits="strokeWidth">
+      <path d="M0,0 L12,6 L0,12 Z" fill="#6d28d9"/>
+    </marker>
+    <marker id="arrow-safety" markerWidth="12" markerHeight="12" refX="10" refY="6"
+            orient="auto" markerUnits="strokeWidth">
+      <path d="M0,0 L12,6 L0,12 Z" fill="#b91c1c"/>
+    </marker>
+    <style>
+      .font { font-family: "DejaVu Sans", "Noto Sans", Arial, sans-serif; }
+      .figure-title { font-size: 40px; font-weight: 700; fill: #0f172a; }
+      .figure-subtitle { font-size: 19px; font-weight: 400; fill: #475569; }
+      .figure-label { font-size: 15px; font-weight: 700; fill: #475569; letter-spacing: 1.2px; }
+      .plane-title { font-size: 20px; font-weight: 700; letter-spacing: 0.8px; }
+      .plane-subtitle { font-size: 14px; font-weight: 400; fill: #64748b; }
+      .layer-chip { font-size: 15px; font-weight: 700; fill: #ffffff; }
+      .node-title { font-size: 24px; font-weight: 700; fill: #0f172a; }
+      .node-rate { font-size: 14px; font-weight: 700; fill: #475569; }
+      .io-label { font-size: 14px; font-weight: 700; letter-spacing: 0.4px; }
+      .io-text { font-size: 17px; font-weight: 400; fill: #334155; }
+      .io-output { font-size: 17px; font-weight: 700; }
+      .side-title { font-size: 21px; font-weight: 700; fill: #0f172a; }
+      .side-text { font-size: 16px; font-weight: 400; fill: #334155; }
+      .side-output { font-size: 16px; font-weight: 700; }
+      .note-title { font-size: 17px; font-weight: 700; }
+      .note-text { font-size: 15px; font-weight: 400; fill: #475569; }
+      .command { fill: none; stroke: #334155; stroke-width: 4; marker-end: url(#arrow-command); }
+      .command-thin { fill: none; stroke: #475569; stroke-width: 3; marker-end: url(#arrow-command); }
+      .state { fill: none; stroke: #0f766e; stroke-width: 3; stroke-dasharray: 10 7; marker-end: url(#arrow-state); }
+      .state-bus { fill: none; stroke: #0f766e; stroke-width: 4; stroke-dasharray: 10 7; }
+      .capability { fill: none; stroke: #6d28d9; stroke-width: 3; stroke-dasharray: 3 7; marker-end: url(#arrow-capability); }
+      .capability-bus { fill: none; stroke: #6d28d9; stroke-width: 4; stroke-dasharray: 3 7; }
+      .safety { fill: none; stroke: #b91c1c; stroke-width: 5; marker-end: url(#arrow-safety); }
+      .feedback { fill: none; stroke: #0f766e; stroke-width: 3.5; marker-end: url(#arrow-state); }
+    </style>
+  </defs>
+
+  <!-- Page -->
+  <rect width="2560" height="1440" fill="#ffffff"/>
+  <text x="80" y="58" class="font figure-title">Kiến trúc phân tầng VLM cho mobile dual-arm OpenArm</text>
+  <text x="80" y="91" class="font figure-subtitle">
+    MVP: VLM ground mục tiêu có schema; planner kiểm symbolic + geometric feasibility; mọi motion đi qua safety độc lập.
+  </text>
+  <text x="2480" y="47" text-anchor="end" class="font figure-label">FIGURE 1 • SYSTEM ARCHITECTURE</text>
+  <text x="2480" y="76" text-anchor="end" class="font figure-subtitle">Contract baseline: ROS 2 position trajectory</text>
+  <line x1="80" y1="112" x2="2480" y2="112" stroke="#cbd5e1" stroke-width="2"/>
+
+  <!-- Legend -->
+  <line x1="80" y1="137" x2="130" y2="137" stroke="#334155" stroke-width="4" marker-end="url(#arrow-command)"/>
+  <text x="145" y="143" class="font note-text">typed command / execution flow</text>
+  <line x1="410" y1="137" x2="460" y2="137" stroke="#0f766e" stroke-width="3" stroke-dasharray="10 7" marker-end="url(#arrow-state)"/>
+  <text x="475" y="143" class="font note-text">world-state / feedback</text>
+  <line x1="710" y1="137" x2="760" y2="137" stroke="#6d28d9" stroke-width="3" stroke-dasharray="3 7" marker-end="url(#arrow-capability)"/>
+  <text x="775" y="143" class="font note-text">capability / availability</text>
+  <line x1="1065" y1="137" x2="1115" y2="137" stroke="#b91c1c" stroke-width="5" marker-end="url(#arrow-safety)"/>
+  <text x="1130" y="143" class="font note-text">independent safety veto</text>
+
+  <!-- Plane backgrounds -->
+  <rect x="80" y="172" width="560" height="1203" rx="18" fill="#f8fafc" stroke="#94a3b8" stroke-width="2"/>
+  <rect x="720" y="172" width="1120" height="1203" rx="18" fill="#fbfcff" stroke="#94a3b8" stroke-width="2"/>
+  <rect x="1920" y="172" width="560" height="1203" rx="18" fill="#f8fafc" stroke="#94a3b8" stroke-width="2"/>
+
+  <!-- Plane headers -->
+  <rect x="80" y="172" width="560" height="62" rx="18" fill="#ecfdf5"/>
+  <rect x="80" y="216" width="560" height="18" fill="#ecfdf5"/>
+  <text x="110" y="202" class="font plane-title" fill="#0f766e">A. OBSERVATION &amp; WORLD-STATE PLANE</text>
+  <text x="110" y="224" class="font plane-subtitle">Sensor → metric state; không dùng simulator ground truth ở production</text>
+
+  <rect x="720" y="172" width="1120" height="62" rx="18" fill="#eef2ff"/>
+  <rect x="720" y="216" width="1120" height="18" fill="#eef2ff"/>
+  <text x="750" y="202" class="font plane-title" fill="#3730a3">B. DECISION &amp; EXECUTION PLANE</text>
+  <text x="750" y="224" class="font plane-subtitle">Một trục authority từ semantic goal đến actuator command</text>
+
+  <rect x="1920" y="172" width="560" height="62" rx="18" fill="#f5f3ff"/>
+  <rect x="1920" y="216" width="560" height="18" fill="#f5f3ff"/>
+  <text x="1950" y="202" class="font plane-title" fill="#6d28d9">C. ASSURANCE &amp; GOVERNANCE PLANE</text>
+  <text x="1950" y="224" class="font plane-subtitle">Capability, safety, traceability và evaluator độc lập</text>
+
+  <!-- Connectors are drawn before nodes -->
+  <!-- Left observation pipeline -->
+  <path d="M360 348 V385" class="state"/>
+  <path d="M360 503 V540" class="state"/>
+  <path d="M360 680 V730" class="state"/>
+
+  <!-- World-state bus: no connector enters node text -->
+  <path d="M600 815 H770 V400" class="state-bus"/>
+  <path d="M770 400 H835" class="state"/>
+  <path d="M770 585 H835" class="state"/>
+  <path d="M770 775 H835" class="state"/>
+
+  <!-- Capability bus on the right -->
+  <path d="M1960 405 H1880 V775" class="capability-bus"/>
+  <path d="M1880 400 H1725" class="capability"/>
+  <path d="M1880 585 H1725" class="capability"/>
+  <path d="M1880 775 H1725" class="capability"/>
+
+  <!-- Main command trunk -->
+  <path d="M1280 315 V340" class="command"/>
+  <path d="M1280 460 V520" class="command"/>
+  <path d="M1280 650 V710" class="command"/>
+  <path d="M1280 840 V875 H1045 V910" class="command-thin"/>
+  <path d="M1280 840 V875 H1515 V910" class="command-thin"/>
+  <path d="M1045 1030 V1065 H1280 V1100" class="command-thin"/>
+  <path d="M1515 1030 V1065 H1280 V1100" class="command-thin"/>
+  <path d="M1280 1210 V1250" class="command"/>
+  <path d="M1280 1320 V1340" class="command"/>
+
+  <!-- Safety veto only enters action guard -->
+  <path d="M1960 895 H1880 V1155 H1725" class="safety"/>
+
+  <!-- Closed-loop feedback stays in the outer corridor -->
+  <path d="M915 1370 H680 V285 H605" class="feedback"/>
+  <text x="662" y="1080" text-anchor="middle" transform="rotate(-90 662 1080)"
+        class="font note-text" fill="#0f766e">sensor / state / controller feedback</text>
+
+  <!-- LEFT NODES -->
+  <g>
+    <rect x="120" y="260" width="480" height="88" rx="12" fill="#ffffff" stroke="#0f766e" stroke-width="2"/>
+    <rect x="120" y="260" width="8" height="88" rx="4" fill="#0f766e"/>
+    <text x="150" y="290" class="font side-title">S0 — Sensors &amp; robot state</text>
+    <text x="150" y="317" class="font side-text">RGB-D • wrist RGB • JointState • TF</text>
+    <text x="150" y="339" class="font side-text">IMU • contact • controller feedback</text>
+  </g>
+
+  <g>
+    <rect x="120" y="390" width="480" height="113" rx="12" fill="#ffffff" stroke="#0f766e" stroke-width="2"/>
+    <rect x="120" y="390" width="8" height="113" rx="4" fill="#0f766e"/>
+    <text x="150" y="420" class="font side-title">S1 — Synchronization &amp; calibration</text>
+    <text x="150" y="448" class="font side-text">timestamp alignment • CameraInfo • depth unit</text>
+    <text x="150" y="471" class="font side-text">TF tại đúng timestamp • calibration_hash</text>
+    <text x="150" y="494" class="font side-output" fill="#0f766e">OUT: valid SensorBundle | health error</text>
+  </g>
+
+  <g>
+    <rect x="120" y="545" width="480" height="135" rx="12" fill="#ffffff" stroke="#0f766e" stroke-width="2"/>
+    <rect x="120" y="545" width="8" height="135" rx="4" fill="#0f766e"/>
+    <text x="150" y="575" class="font side-title">L4 — Perception</text>
+    <text x="570" y="575" text-anchor="end" class="font node-rate">10–30 Hz</text>
+    <text x="150" y="604" class="font side-text">detect / segment → depth deprojection → tracking</text>
+    <text x="150" y="630" class="font side-output" fill="#0f766e">OUT: ObjectHypothesis</text>
+    <text x="150" y="654" class="font side-text">{track_id, metric_pose, covariance, visibility}</text>
+  </g>
+
+  <g>
+    <rect x="120" y="735" width="480" height="160" rx="12" fill="#ffffff" stroke="#0f766e" stroke-width="2.5"/>
+    <rect x="120" y="735" width="8" height="160" rx="4" fill="#0f766e"/>
+    <text x="150" y="766" class="font side-title">L4 — Versioned world model</text>
+    <text x="150" y="795" class="font side-text">stable object ID • TTL • uncertainty • relations</text>
+    <text x="150" y="822" class="font side-output" fill="#0f766e">OUT: SceneSnapshot</text>
+    <text x="150" y="846" class="font side-text">{scene_revision, objects, robot_summary}</text>
+    <text x="150" y="873" class="font side-output" fill="#0f766e">+ MoveIt PlanningScene</text>
+  </g>
+
+  <g>
+    <rect x="120" y="940" width="480" height="142" rx="12" fill="#f0fdfa" stroke="#5eead4" stroke-width="2"/>
+    <text x="150" y="972" class="font note-title" fill="#0f766e">KỶ LUẬT DỮ LIỆU</text>
+    <text x="150" y="1001" class="font side-text">• object pose phải đến từ calibrated geometry</text>
+    <text x="150" y="1027" class="font side-text">• stale/uncertain object không trở thành motion goal</text>
+    <text x="150" y="1053" class="font side-text">• simulator GT chỉ dùng label/evaluation</text>
+  </g>
+
+  <!-- CENTER NODES -->
+  <g>
+    <rect x="920" y="255" width="720" height="60" rx="30" fill="#1e293b"/>
+    <text x="1280" y="280" text-anchor="middle" class="font" font-size="17" font-weight="700" fill="#ffffff">MISSION GATEWAY</text>
+    <text x="1280" y="302" text-anchor="middle" class="font" font-size="14" fill="#e2e8f0">OUT: MissionRequest{instruction, constraints, authorization, mode}</text>
+  </g>
+
+  <g>
+    <rect x="840" y="340" width="880" height="120" rx="14" fill="#ffffff" stroke="#7c3aed" stroke-width="3"/>
+    <rect x="840" y="340" width="104" height="35" rx="12" fill="#7c3aed"/>
+    <text x="892" y="363" text-anchor="middle" class="font layer-chip">L5A</text>
+    <text x="970" y="367" class="font node-title">VLM Goal Grounder</text>
+    <text x="1685" y="365" text-anchor="end" class="font node-rate">event-driven • 0.2–2 Hz</text>
+    <text x="870" y="402" class="font io-label" fill="#6d28d9">IN</text>
+    <text x="925" y="402" class="font io-text">MissionRequest + SceneSnapshot + RobotCapability</text>
+    <text x="870" y="436" class="font io-label" fill="#6d28d9">OUT</text>
+    <text x="925" y="436" class="font io-output" fill="#6d28d9">GroundedGoal{goal, object_refs, constraints, ambiguities}</text>
+  </g>
+
+  <g>
+    <rect x="840" y="520" width="880" height="130" rx="14" fill="#ffffff" stroke="#4f46e5" stroke-width="3"/>
+    <rect x="840" y="520" width="104" height="35" rx="12" fill="#4f46e5"/>
+    <text x="892" y="543" text-anchor="middle" class="font layer-chip">L5B</text>
+    <text x="970" y="547" class="font node-title">Hybrid Task Planner + Plan Validator</text>
+    <text x="870" y="585" class="font io-label" fill="#4338ca">IN</text>
+    <text x="925" y="585" class="font io-text">GroundedGoal + SceneSnapshot + SkillRegistry + feasibility</text>
+    <text x="870" y="619" class="font io-label" fill="#4338ca">OUT</text>
+    <text x="925" y="619" class="font io-output" fill="#4338ca">ValidatedTaskPlan{steps, pre/postconditions, resources, recovery}</text>
+  </g>
+
+  <g>
+    <rect x="840" y="710" width="880" height="130" rx="14" fill="#ffffff" stroke="#d97706" stroke-width="3"/>
+    <rect x="840" y="710" width="104" height="35" rx="12" fill="#d97706"/>
+    <text x="892" y="733" text-anchor="middle" class="font layer-chip">L3</text>
+    <text x="970" y="737" class="font node-title">Skill Executive / Behavior Tree</text>
+    <text x="1685" y="735" text-anchor="end" class="font node-rate">tick • 5–20 Hz</text>
+    <text x="870" y="775" class="font io-label" fill="#b45309">IN</text>
+    <text x="925" y="775" class="font io-text">ValidatedTaskPlan + live WorldState + action/safety feedback</text>
+    <text x="870" y="809" class="font io-label" fill="#b45309">OUT</text>
+    <text x="925" y="809" class="font io-output" fill="#b45309">typed SkillGoal | reobserve | replan | bounded recovery</text>
+  </g>
+
+  <g>
+    <rect x="840" y="910" width="410" height="120" rx="14" fill="#ffffff" stroke="#2563eb" stroke-width="3"/>
+    <rect x="840" y="910" width="92" height="33" rx="11" fill="#2563eb"/>
+    <text x="886" y="932" text-anchor="middle" class="font layer-chip">L2A</text>
+    <text x="956" y="935" class="font node-title">MoveIt 2 / MTC</text>
+    <text x="870" y="972" class="font io-text">IN: target pose + PlanningScene</text>
+    <text x="870" y="1005" class="font io-output" fill="#1d4ed8">OUT: time-parameterized JointTrajectory</text>
+  </g>
+
+  <g>
+    <rect x="1310" y="910" width="410" height="120" rx="14" fill="#ffffff" stroke="#059669" stroke-width="3"/>
+    <rect x="1310" y="910" width="92" height="33" rx="11" fill="#059669"/>
+    <text x="1356" y="932" text-anchor="middle" class="font layer-chip">L2.5</text>
+    <text x="1422" y="935" class="font node-title">ACT / VLA skill</text>
+    <text x="1690" y="935" text-anchor="end" class="font node-rate">optional</text>
+    <text x="1340" y="972" class="font io-text">IN: images + state + fixed skill_context</text>
+    <text x="1340" y="1005" class="font io-output" fill="#047857">OUT: bounded action chunk</text>
+  </g>
+
+  <g>
+    <rect x="840" y="1100" width="880" height="110" rx="14" fill="#fff7f7" stroke="#be123c" stroke-width="4"/>
+    <rect x="840" y="1100" width="104" height="35" rx="12" fill="#be123c"/>
+    <text x="892" y="1123" text-anchor="middle" class="font layer-chip">L1</text>
+    <text x="970" y="1127" class="font node-title">Shared Action Guard + Arbitration</text>
+    <text x="1685" y="1125" text-anchor="end" class="font node-rate">50–200 Hz</text>
+    <text x="870" y="1162" class="font io-text">IN: candidate trajectory/chunk + current state + SafetyState</text>
+    <text x="870" y="1191" class="font io-output" fill="#be123c">OUT: accepted command | reject | hold | stop</text>
+  </g>
+
+  <g>
+    <rect x="920" y="1250" width="720" height="70" rx="14" fill="#e2e8f0" stroke="#475569" stroke-width="2.5"/>
+    <text x="1280" y="1278" text-anchor="middle" class="font node-title" font-size="19">L0 — ROS 2 Controller / Hardware Adapter</text>
+    <text x="1280" y="1305" text-anchor="middle" class="font io-text">FollowJointTrajectory (position) • /cmd_vel • action feedback</text>
+  </g>
+
+  <g>
+    <rect x="920" y="1340" width="720" height="60" rx="16" fill="#166534"/>
+    <text x="1280" y="1377" text-anchor="middle" class="font" font-size="20" font-weight="700" fill="#ffffff">ROBOT / PLANT — MuJoCo • Gazebo • hardware</text>
+  </g>
+
+  <!-- RIGHT NODES -->
+  <g>
+    <rect x="1960" y="300" width="480" height="210" rx="14" fill="#ffffff" stroke="#7c3aed" stroke-width="2.5"/>
+    <rect x="1960" y="300" width="8" height="210" rx="4" fill="#7c3aed"/>
+    <text x="1990" y="332" class="font side-title">Runtime Capability Registry</text>
+    <text x="1990" y="363" class="font side-text">• allow-listed skill + typed arguments</text>
+    <text x="1990" y="389" class="font side-text">• arm/backend availability + health</text>
+    <text x="1990" y="415" class="font side-text">• resources + risk/authorization class</text>
+    <text x="1990" y="441" class="font side-text">• applicability envelope + version</text>
+    <text x="1990" y="479" class="font side-output" fill="#6d28d9">OUT: RobotCapability + registry_revision</text>
+  </g>
+
+  <g>
+    <rect x="1960" y="760" width="480" height="270" rx="14" fill="#fff7f7" stroke="#b91c1c" stroke-width="3"/>
+    <rect x="1960" y="760" width="8" height="270" rx="4" fill="#b91c1c"/>
+    <text x="1990" y="794" class="font side-title">Independent Safety Supervisor</text>
+    <text x="1990" y="826" class="font side-text">• E-stop • operator cancel • watchdog</text>
+    <text x="1990" y="853" class="font side-text">• joint / velocity / workspace limits</text>
+    <text x="1990" y="880" class="font side-text">• self / environment collision</text>
+    <text x="1990" y="907" class="font side-text">• stale / NaN / discontinuous action</text>
+    <text x="1990" y="934" class="font side-text">• controller tracking error / fault state</text>
+    <rect x="1990" y="958" width="420" height="47" rx="8" fill="#fee2e2"/>
+    <text x="2200" y="979" text-anchor="middle" class="font side-output" fill="#991b1b">VETO độc lập — không chờ VLM</text>
+    <text x="2200" y="999" text-anchor="middle" class="font side-text">SafetyEvent + SafetyState</text>
+  </g>
+
+  <g>
+    <rect x="1960" y="1080" width="480" height="250" rx="14" fill="#ffffff" stroke="#64748b" stroke-width="2"/>
+    <rect x="1960" y="1080" width="8" height="250" rx="4" fill="#64748b"/>
+    <text x="1990" y="1112" class="font side-title">Observability &amp; Evaluation</text>
+    <text x="1990" y="1144" class="font side-text">read-only: mission → goal → plan → skill</text>
+    <text x="1990" y="1170" class="font side-text">candidate/executed action → result</text>
+    <text x="1990" y="1201" class="font side-text">trace ID • rosbag • dataset • metrics</text>
+    <rect x="1990" y="1225" width="420" height="75" rx="8" fill="#faf5ff" stroke="#a855f7" stroke-width="1.5" stroke-dasharray="7 5"/>
+    <text x="2200" y="1252" text-anchor="middle" class="font side-output" fill="#7e22ce">SIMULATOR GROUND TRUTH</text>
+    <text x="2200" y="1277" text-anchor="middle" class="font side-text">chỉ evaluator/test; cấm production subscribe</text>
+  </g>
+
+  <!-- Explicit model containment note -->
+  <rect x="1960" y="540" width="480" height="145" rx="14" fill="#fef2f2" stroke="#ef4444" stroke-width="2"/>
+  <text x="1990" y="575" class="font note-title" fill="#991b1b">MODEL CONTAINMENT BOUNDARY</text>
+  <text x="1990" y="608" class="font side-text">VLM không được sinh numeric pose, joint target,</text>
+  <text x="1990" y="635" class="font side-text">torque, ROS topic, shell command hoặc code thực thi.</text>
+  <text x="1990" y="666" class="font side-output" fill="#991b1b">Mọi output phải parse + schema/semantic validate.</text>
+</svg>

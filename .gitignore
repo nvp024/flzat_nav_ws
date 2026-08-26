@@ -1,0 +1,23 @@
+/build/
+/install/
+/log/
+
+/dist/
+/.colcon/
+
+**/__pycache__/
+*.py[cod]
+.pytest_cache/
+
+/.vscode/
+/.idea/
+
+# TF generated files
+frames_*.gv
+frames_*.pdf
+
+# Runtime output
+nohup.out
+
+# Temporary files
+*~

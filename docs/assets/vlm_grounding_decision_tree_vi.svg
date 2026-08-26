@@ -1,0 +1,184 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" width="2200" height="1600" viewBox="0 0 2200 1600"
+     role="img" aria-labelledby="tree-title tree-description">
+  <title id="tree-title">Cây quyết định VLM grounding và validation cho OpenArm</title>
+  <desc id="tree-description">
+    Cây quyết định mô tả input của VLM, GroundedGoalDraft, schema validation, semantic validation,
+    clarification hoặc re-observation, GroundedGoal, hybrid planning và ValidatedTaskPlan.
+  </desc>
+
+  <defs>
+    <marker id="arrow" markerWidth="12" markerHeight="12" refX="10" refY="6"
+            orient="auto" markerUnits="strokeWidth">
+      <path d="M0,0 L12,6 L0,12 Z" fill="#334155"/>
+    </marker>
+    <marker id="arrow-good" markerWidth="12" markerHeight="12" refX="10" refY="6"
+            orient="auto" markerUnits="strokeWidth">
+      <path d="M0,0 L12,6 L0,12 Z" fill="#15803d"/>
+    </marker>
+    <marker id="arrow-warn" markerWidth="12" markerHeight="12" refX="10" refY="6"
+            orient="auto" markerUnits="strokeWidth">
+      <path d="M0,0 L12,6 L0,12 Z" fill="#b45309"/>
+    </marker>
+    <marker id="arrow-bad" markerWidth="12" markerHeight="12" refX="10" refY="6"
+            orient="auto" markerUnits="strokeWidth">
+      <path d="M0,0 L12,6 L0,12 Z" fill="#b91c1c"/>
+    </marker>
+    <style>
+      .font { font-family: "DejaVu Sans", "Noto Sans", Arial, sans-serif; }
+      .title { font-size: 40px; font-weight: 700; fill: #0f172a; }
+      .subtitle { font-size: 19px; font-weight: 400; fill: #475569; }
+      .figure-label { font-size: 15px; font-weight: 700; fill: #475569; letter-spacing: 1.2px; }
+      .step { font-size: 14px; font-weight: 700; letter-spacing: 0.8px; }
+      .node-title { font-size: 23px; font-weight: 700; fill: #0f172a; }
+      .node-text { font-size: 17px; font-weight: 400; fill: #334155; }
+      .node-output { font-size: 17px; font-weight: 700; }
+      .diamond-title { font-size: 20px; font-weight: 700; fill: #0f172a; }
+      .diamond-text { font-size: 15px; font-weight: 400; fill: #475569; }
+      .branch-label { font-size: 16px; font-weight: 700; }
+      .error-title { font-size: 20px; font-weight: 700; }
+      .error-text { font-size: 16px; font-weight: 400; fill: #475569; }
+      .flow { fill: none; stroke: #334155; stroke-width: 4; marker-end: url(#arrow); }
+      .good { fill: none; stroke: #15803d; stroke-width: 4; marker-end: url(#arrow-good); }
+      .warn { fill: none; stroke: #b45309; stroke-width: 4; marker-end: url(#arrow-warn); }
+      .bad { fill: none; stroke: #b91c1c; stroke-width: 4; marker-end: url(#arrow-bad); }
+    </style>
+  </defs>
+
+  <rect width="2200" height="1600" fill="#ffffff"/>
+  <text x="70" y="58" class="font title">Cây quyết định VLM grounding và validation</text>
+  <text x="70" y="92" class="font subtitle">
+    Authority boundary: VLM chỉ tạo GroundedGoalDraft; schema/semantic validator và hybrid planner mới cho phép đi tiếp.
+  </text>
+  <text x="2130" y="47" text-anchor="end" class="font figure-label">FIGURE 2 • VLM DECISION TREE</text>
+  <text x="2130" y="76" text-anchor="end" class="font subtitle">Fail-closed by construction</text>
+  <line x1="70" y1="115" x2="2130" y2="115" stroke="#cbd5e1" stroke-width="2"/>
+
+  <!-- Main vertical connectors behind nodes -->
+  <path d="M1100 270 V315" class="flow"/>
+  <path d="M1100 455 V515" class="flow"/>
+  <path d="M1100 655 V710" class="good"/>
+  <path d="M1100 870 V925" class="good"/>
+  <path d="M1100 1025 V1065" class="flow"/>
+  <path d="M1100 1185 V1230" class="flow"/>
+  <path d="M1100 1370 V1410" class="good"/>
+
+  <!-- Schema invalid branch -->
+  <path d="M1390 585 H1600" class="bad"/>
+  <text x="1490" y="568" text-anchor="middle" class="font branch-label" fill="#b91c1c">NO</text>
+
+  <!-- Semantic branches -->
+  <path d="M810 790 H590" class="warn"/>
+  <text x="700" y="772" text-anchor="middle" class="font branch-label" fill="#b45309">AMBIGUOUS</text>
+  <path d="M1390 790 H1600" class="bad"/>
+  <text x="1495" y="772" text-anchor="middle" class="font branch-label" fill="#b91c1c">INVALID / STALE</text>
+
+  <!-- Plan infeasible branch -->
+  <path d="M1390 1300 H1600" class="bad"/>
+  <text x="1490" y="1282" text-anchor="middle" class="font branch-label" fill="#b91c1c">NO</text>
+
+  <!-- Main input -->
+  <g>
+    <rect x="630" y="145" width="940" height="125" rx="16" fill="#f8fafc" stroke="#475569" stroke-width="2.5"/>
+    <text x="665" y="176" class="font step" fill="#475569">INPUT BUNDLE</text>
+    <text x="1100" y="208" text-anchor="middle" class="font node-title">MissionRequest + SceneSnapshot + RobotCapability</text>
+    <text x="1100" y="240" text-anchor="middle" class="font node-text">instruction • annotated keyframe • scene_revision • robot state • capability_revision</text>
+  </g>
+
+  <!-- VLM -->
+  <g>
+    <rect x="630" y="315" width="940" height="140" rx="16" fill="#ffffff" stroke="#7c3aed" stroke-width="3"/>
+    <rect x="630" y="315" width="150" height="38" rx="12" fill="#7c3aed"/>
+    <text x="705" y="341" text-anchor="middle" class="font step" fill="#ffffff">VLM • L5A</text>
+    <text x="810" y="345" class="font node-title">Goal grounding</text>
+    <text x="665" y="389" class="font node-text">Resolve object references, goal predicates, constraints and explicit ambiguity.</text>
+    <text x="665" y="426" class="font node-output" fill="#6d28d9">OUT: GroundedGoalDraft{goal, object_refs, constraints, ambiguities, evidence}</text>
+  </g>
+
+  <!-- Schema decision -->
+  <g>
+    <polygon points="1100,515 1390,585 1100,655 810,585" fill="#eef2ff" stroke="#4f46e5" stroke-width="3"/>
+    <text x="1100" y="573" text-anchor="middle" class="font diamond-title">Schema hợp lệ?</text>
+    <text x="1100" y="602" text-anchor="middle" class="font diamond-text">version • required fields • types • supported predicates</text>
+    <text x="1100" y="631" text-anchor="middle" class="font branch-label" fill="#15803d">YES ↓</text>
+  </g>
+
+  <!-- Schema reject -->
+  <g>
+    <rect x="1600" y="515" width="500" height="140" rx="14" fill="#fff7f7" stroke="#b91c1c" stroke-width="3"/>
+    <text x="1630" y="552" class="font error-title" fill="#991b1b">GOAL_SCHEMA_INVALID</text>
+    <text x="1630" y="588" class="font error-text">Reject response • log raw/parsed artifact</text>
+    <text x="1630" y="620" class="font node-output" fill="#b91c1c">HOLD — không tạo plan, không motion</text>
+  </g>
+
+  <!-- Semantic decision -->
+  <g>
+    <polygon points="1100,710 1390,790 1100,870 810,790" fill="#f0fdfa" stroke="#0f766e" stroke-width="3"/>
+    <text x="1100" y="772" text-anchor="middle" class="font diamond-title">Semantic hợp lệ và đủ rõ?</text>
+    <text x="1100" y="801" text-anchor="middle" class="font diamond-text">object ID • scene revision • localization • constraints • authorization</text>
+    <text x="1100" y="838" text-anchor="middle" class="font branch-label" fill="#15803d">VALID ↓</text>
+  </g>
+
+  <!-- Ask user -->
+  <g>
+    <rect x="100" y="715" width="490" height="150" rx="14" fill="#fffbeb" stroke="#b45309" stroke-width="3"/>
+    <text x="130" y="754" class="font error-title" fill="#92400e">ASK_USER / CLARIFY</text>
+    <text x="130" y="791" class="font error-text">Hai vật thể khớp mô tả hoặc thiếu constraint.</text>
+    <text x="130" y="825" class="font node-output" fill="#b45309">HOLD → chờ MissionRequest rõ hơn</text>
+  </g>
+
+  <!-- Reobserve / semantic reject -->
+  <g>
+    <rect x="1600" y="700" width="500" height="180" rx="14" fill="#fff7f7" stroke="#b91c1c" stroke-width="3"/>
+    <text x="1630" y="739" class="font error-title" fill="#991b1b">SEMANTIC REJECT</text>
+    <text x="1630" y="776" class="font error-text">UNKNOWN_OBJECT • STALE_SCENE</text>
+    <text x="1630" y="806" class="font error-text">OBJECT_UNLOCALIZED • AUTHORIZATION_REQUIRED</text>
+    <text x="1630" y="846" class="font node-output" fill="#b91c1c">REOBSERVE / refresh snapshot / fail safely</text>
+  </g>
+
+  <!-- Valid goal -->
+  <g>
+    <rect x="680" y="925" width="840" height="100" rx="16" fill="#ecfdf5" stroke="#15803d" stroke-width="3"/>
+    <text x="1100" y="963" text-anchor="middle" class="font node-title" fill="#166534">Validated GroundedGoal</text>
+    <text x="1100" y="997" text-anchor="middle" class="font node-output" fill="#15803d">Semantic authority của VLM kết thúc tại đây</text>
+  </g>
+
+  <!-- Planner -->
+  <g>
+    <rect x="630" y="1065" width="940" height="120" rx="16" fill="#ffffff" stroke="#4f46e5" stroke-width="3"/>
+    <rect x="630" y="1065" width="175" height="38" rx="12" fill="#4f46e5"/>
+    <text x="718" y="1091" text-anchor="middle" class="font step" fill="#ffffff">PLANNER • L5B</text>
+    <text x="835" y="1095" class="font node-title">Hybrid task planning</text>
+    <text x="665" y="1136" class="font node-text">HTN/templates + skill preconditions/effects + MoveIt geometric feasibility</text>
+    <text x="665" y="1167" class="font node-output" fill="#4338ca">Candidate: ordered, bounded and resource-safe skill sequence</text>
+  </g>
+
+  <!-- Feasibility decision -->
+  <g>
+    <polygon points="1100,1230 1390,1300 1100,1370 810,1300" fill="#eef2ff" stroke="#4f46e5" stroke-width="3"/>
+    <text x="1100" y="1288" text-anchor="middle" class="font diamond-title">Plan có khả thi?</text>
+    <text x="1100" y="1317" text-anchor="middle" class="font diamond-text">skill available • resource free • reachable • IK • collision • budget</text>
+    <text x="1100" y="1346" text-anchor="middle" class="font branch-label" fill="#15803d">YES ↓</text>
+  </g>
+
+  <!-- No feasible plan -->
+  <g>
+    <rect x="1600" y="1230" width="500" height="140" rx="14" fill="#fff7f7" stroke="#b91c1c" stroke-width="3"/>
+    <text x="1630" y="1268" class="font error-title" fill="#991b1b">NO_FEASIBLE_PLAN</text>
+    <text x="1630" y="1304" class="font error-text">Alternative arm/grasp hết budget hoặc unavailable.</text>
+    <text x="1630" y="1338" class="font node-output" fill="#b91c1c">REOBSERVE / clarify / safe mission failure</text>
+  </g>
+
+  <!-- Validated plan -->
+  <g>
+    <rect x="630" y="1410" width="940" height="110" rx="16" fill="#ecfdf5" stroke="#15803d" stroke-width="3"/>
+    <text x="1100" y="1452" text-anchor="middle" class="font node-title" fill="#166534">ValidatedTaskPlan</text>
+    <text x="1100" y="1487" text-anchor="middle" class="font node-output" fill="#15803d">OUT → Skill Executive / Behavior Tree — chưa phải joint hoặc torque command</text>
+  </g>
+
+  <!-- Containment footer -->
+  <rect x="70" y="1545" width="2060" height="35" rx="8" fill="#fef2f2"/>
+  <text x="1100" y="1569" text-anchor="middle" class="font node-output" fill="#991b1b">
+    MODEL CONTAINMENT: VLM không xuất numeric pose, joint target, torque, ROS topic, shell command hoặc executable code.
+  </text>
+</svg>

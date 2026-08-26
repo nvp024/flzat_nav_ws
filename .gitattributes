@@ -1,0 +1,6 @@
+# Preserve generated CAD and SolidWorks reference artifacts byte-for-byte.
+*.STL binary
+*.png binary
+src/openarm_skeleton_v1_2_description/urdf/reference/*.csv binary
+src/openarm_skeleton_v1_2_description/urdf/reference/*.log binary
+src/openarm_skeleton_v1_2_description/urdf/reference/*.urdf binary
