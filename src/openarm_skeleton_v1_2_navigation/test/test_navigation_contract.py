@@ -3,6 +3,7 @@
 import ast
 from pathlib import Path
 import subprocess
+import xml.etree.ElementTree as ET
 
 import yaml
 
@@ -44,6 +45,18 @@ def test_nav2_uses_expected_frames_scan_and_footprint():
         assert scan["raytrace_max_range"] == 20.0
 
 
+def test_amcl_auto_initializes_at_the_fixed_hotel_spawn():
+    amcl = _params()["amcl"]["ros__parameters"]
+    assert amcl["set_initial_pose"] is True
+    assert amcl["always_reset_initial_pose"] is False
+    assert amcl["initial_pose"] == {
+        "x": 0.0,
+        "y": 0.0,
+        "z": 0.0,
+        "yaw": 0.0,
+    }
+
+
 def test_velocity_chain_keeps_the_independent_watchdog_boundary():
     launch = NAVIGATION_LAUNCH.read_text(encoding="utf-8")
     assert '("cmd_vel", "cmd_vel_nav")' in launch
@@ -57,6 +70,7 @@ def test_sim_launch_supports_slam_and_saved_map_localization():
     launch = SIM_LAUNCH.read_text(encoding="utf-8")
     assert "slam_launch.py" in launch
     assert "localization_launch.py" in launch
+    assert '"use_composition": "False"' in launch
     assert '"auto_run": "false"' in launch
     assert "map:=/absolute/path/to/map.yaml" in launch
     assert "nav2_openarm_view.rviz" in launch
@@ -88,6 +102,20 @@ def test_rviz_rgbd_displays_use_sensor_data_qos():
     assert depth["Normalize Range"] is False
     assert float(depth["Min Value"]) == 0.0
     assert float(depth["Max Value"]) == 10.0
+
+
+def test_rviz_displays_completed_rag_object_coordinates():
+    config = yaml.safe_load(RVIZ_CONFIG.read_text(encoding="utf-8"))
+    displays = config["Visualization Manager"]["Displays"]
+    markers = next(
+        display
+        for display in displays
+        if display.get("Name") == "RAG Object Coordinates"
+    )
+    assert markers["Class"] == "rviz_default_plugins/MarkerArray"
+    assert markers["Enabled"] is True
+    assert markers["Topic"]["Value"] == "/environment_memory/object_markers"
+    assert markers["Topic"]["Durability Policy"] == "Transient Local"
 
 
 def test_rviz_uses_3d_orbit_view_without_pointcloud_display():
@@ -180,14 +208,21 @@ def test_navigation_goal_acceptance_check_is_installed():
     assert "abs(cross_track) <= args.max_cross_track" in script
 
 
-def test_navfn_path_is_smoothed_before_following():
+def test_navfn_path_is_followed_directly_while_path_smoother_is_disabled():
     launch = NAVIGATION_LAUNCH.read_text(encoding="utf-8")
     tree = SMOOTHED_NAV_BT.read_text(encoding="utf-8")
+    root = ET.parse(SMOOTHED_NAV_BT).getroot()
     cmake = (PACKAGE / "CMakeLists.txt").read_text(encoding="utf-8")
     assert "default_nav_to_pose_bt_xml" in launch
     assert "navigate_to_pose_with_smoothing.xml" in launch
     assert "DIRECTORY behavior_trees config launch" in cmake
-    assert '<ComputePathToPose goal="{goal}" path="{raw_path}"' in tree
+    compute_path = root.find(".//ComputePathToPose")
+    follow_path = root.find(".//FollowPath")
+    assert compute_path is not None
+    assert compute_path.attrib["path"] == "{path}"
+    assert follow_path is not None
+    assert follow_path.attrib["path"] == "{path}"
+    assert root.find(".//SmoothPath") is None
+    assert "Disabled after repeated SMOOTHED_PATH_IN_COLLISION" in tree
     assert '<SmoothPath unsmoothed_path="{raw_path}"' in tree
     assert 'smoothed_path="{path}"' in tree
-    assert '<FollowPath path="{path}"' in tree

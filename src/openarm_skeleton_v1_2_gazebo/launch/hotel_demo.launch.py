@@ -34,7 +34,10 @@ def generate_launch_description():
     package_share = Path(
         get_package_share_directory("openarm_skeleton_v1_2_gazebo")
     )
-    world = package_share / "worlds" / "hotel_lobby_demo.sdf"
+    default_world = package_share / "worlds" / "hotel_lobby_demo.sdf"
+    world = LaunchConfiguration("world")
+    world_name = LaunchConfiguration("world_name")
+    robot_name = LaunchConfiguration("robot_name")
     auto_run = LaunchConfiguration("auto_run")
     headless = LaunchConfiguration("headless")
     route_scale = LaunchConfiguration("route_scale")
@@ -47,9 +50,9 @@ def generate_launch_description():
             str(package_share / "launch" / "simulation.launch.py")
         ),
         launch_arguments={
-            "world": str(world),
-            "world_name": "hotel_lobby",
-            "robot_name": "openarm_skeleton_hotel",
+            "world": world,
+            "world_name": world_name,
+            "robot_name": robot_name,
             "enable_skeleton_lift": "false",
             "headless": headless,
             "use_sim_time": use_sim_time,
@@ -84,6 +87,21 @@ def generate_launch_description():
 
     return LaunchDescription(
         [
+            DeclareLaunchArgument(
+                "world",
+                default_value=str(default_world),
+                description="Absolute path to the SDF world.",
+            ),
+            DeclareLaunchArgument(
+                "world_name",
+                default_value="hotel_lobby",
+                description="Name of the world declared inside the SDF.",
+            ),
+            DeclareLaunchArgument(
+                "robot_name",
+                default_value="openarm_skeleton_hotel",
+                description="Gazebo entity name for the spawned robot.",
+            ),
             DeclareLaunchArgument(
                 "auto_run",
                 default_value="true",

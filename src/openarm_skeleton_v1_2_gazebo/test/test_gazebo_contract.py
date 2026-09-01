@@ -62,14 +62,84 @@ def test_hotel_world_and_route_landmarks_are_local_assets():
     }
     assert {
         "hotel_floor",
-        "reception_main_counter",
+        "indoor_dining_table",
         "lobby_sofa_west",
-        "luggage_cart",
+        "lobby_wall_clock",
+        "living_kitchen_partition",
+        "living_tv_unit",
+        "living_side_table",
+        "living_armchair_south",
+        "living_floor_plant",
+        "living_coffee_table_decor",
+        "living_wall_art",
+        "kitchen_counter_set",
+        "kitchen_microwave",
+        "kitchen_refrigerator",
+        "kitchen_trash_bin",
+        "dining_pendant_light",
+        "bedroom_partition_north",
+        "bedroom_partition_west",
+        "bedroom_partition_west_lower",
+        "bedroom_bed",
+        "bedroom_nightstand",
+        "bedroom_wardrobe",
+        "bedroom_desk",
+        "bedroom_desk_chair",
         "elevator_bank",
         "hotel_start_zone",
     }.issubset(model_names)
+    assert {"dining_chair_west", "dining_chair_east"}.isdisjoint(model_names)
+    partition = world.find("./model[@name='living_kitchen_partition']")
+    assert partition is not None
+    assert tuple(float(value) for value in partition.findtext("pose").split()) \
+        == pytest.approx((1.25, 4.325, 1.20, 0.0, 0.0, 0.0))
+    partition_size = partition.findtext(
+        "./link/collision[@name='partition_collision']/geometry/box/size"
+    )
+    assert tuple(float(value) for value in partition_size.split()) \
+        == pytest.approx((0.18, 2.75, 2.40))
+    kitchen_door_south = 1.65 + (0.18 / 2.0)
+    kitchen_door_north = 4.325 - (2.75 / 2.0)
+    assert kitchen_door_north - kitchen_door_south == pytest.approx(1.21)
     assert not root.findall(".//include")
     assert not root.findall(".//uri")
+
+
+def test_living_room_and_bedroom_have_deliberate_clear_layouts():
+    world = ET.parse(HOTEL_WORLD).getroot().find("./world")
+
+    def model_pose(name):
+        model = world.find(f"./model[@name='{name}']")
+        assert model is not None
+        return tuple(float(value) for value in model.findtext("pose").split())
+
+    # The coffee table is centered between a west sofa, north sofa and south
+    # armchair, and all three seats face inward toward the television area.
+    assert model_pose("lobby_sofa_west") == pytest.approx(
+        (-2.70, 3.40, 0.225, 0.0, 0.0, 1.570796326794897)
+    )
+    assert model_pose("lobby_sofa_north") == pytest.approx(
+        (-1.15, 4.75, 0.225, 0.0, 0.0, 3.141592653589793)
+    )
+    assert model_pose("lobby_coffee_table") == pytest.approx(
+        (-1.15, 3.40, 0.12, 0.0, 0.0, 0.0)
+    )
+    assert model_pose("living_armchair_south") == pytest.approx(
+        (-1.15, 2.05, 0.235, 0.0, 0.0, 3.141592653589793)
+    )
+
+    upper_wall = model_pose("bedroom_partition_west")
+    lower_wall = model_pose("bedroom_partition_west_lower")
+    upper_south_edge = upper_wall[1] - (2.45 / 2.0)
+    lower_north_edge = lower_wall[1] + (3.50 / 2.0)
+    lower_south_edge = lower_wall[1] - (3.50 / 2.0)
+    assert upper_south_edge - lower_north_edge == pytest.approx(1.40)
+    # The existing route crosses x=1.65 at y=-1.5, centered in this doorway.
+    assert lower_north_edge < -1.50 < upper_south_edge
+    # The lower wall now meets the building's inner south-wall face directly.
+    assert lower_south_edge == pytest.approx(-5.70)
+    assert model_pose("bedroom_partition_north")[1] == pytest.approx(1.65)
+    assert model_pose("bedroom_bed")[1] == pytest.approx(-1.30)
 
 
 def test_launches_reference_the_hotel_and_local_package():

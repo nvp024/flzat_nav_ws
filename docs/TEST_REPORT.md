@@ -604,3 +604,139 @@ sang `base_link`/`map` khi cần.
 
 Build sau khi loại bỏ thành công cả 3 package; regression đạt 32 test, 0 error,
 0 failure, 0 skipped.
+
+### Raw NavFn path diagnostic — 2026-08-30
+
+Một goal Nav2 thủ công, không chạy frontier exploration, lặp lại tám lỗi
+`SMOOTHED_PATH_IN_COLLISION` quanh `x=-1.44..-1.61`, `y=3.41..3.50` trước
+khi `FollowPath` nhận được đường. Behavior tree sau đó chạy các recovery
+clear-costmap, backup và spin rồi trả `Goal failed`. Điều này cô lập lỗi tại
+bước path smoothing/collision validation, không phải do frontier hoặc robot đã
+chạy tới vật cản vật lý.
+
+Để kiểm chứng bằng raw NavFn path, `SmoothPath` được giữ nguyên dưới dạng XML
+comment và `ComputePathToPose` hiện ghi trực tiếp vào blackboard `{path}` cho
+`FollowPath`. Velocity smoother, controller collision detection, costmap,
+footprint và watchdog không thay đổi.
+
+Validation tĩnh/build:
+
+```bash
+source /opt/ros/jazzy/setup.bash
+colcon build --symlink-install \
+  --packages-select openarm_skeleton_v1_2_navigation
+PYTEST_DISABLE_PLUGIN_AUTOLOAD=1 colcon test \
+  --packages-select openarm_skeleton_v1_2_navigation \
+  --event-handlers console_direct+
+colcon test-result \
+  --test-result-base \
+  build/openarm_skeleton_v1_2_navigation/test_results --verbose
+```
+
+```text
+Build: 1 package finished
+Navigation contract: 10 passed
+Test result: 10 tests, 0 errors, 0 failures, 0 skipped
+Installed behavior tree: active SmoothPath=false,
+  ComputePathToPose output={path}, FollowPath input={path}
+```
+
+`PYTEST_DISABLE_PLUGIN_AUTOLOAD=1` chỉ cô lập xung đột giữa pytest 9.1.1 trong
+Conda `py312` và plugin `launch_testing` của ROS Jazzy; test nguồn tương tự
+cũng PASS bằng `/usr/bin/python3 -m pytest`. Runtime goal acceptance với raw
+path được ghi ở mục Mode 2 ngay bên dưới.
+
+### Saved-map Mode 2 text-command acceptance — 2026-08-31
+
+Mode localization ban đầu dừng khi include `localization_launch.py` với lỗi
+`name 'false' is not defined`. Nav2 Jazzy dùng biểu thức Python
+`not <use_composition>`; literal chữ thường do OpenArm truyền vào tạo thành
+`not false`. `nav2_sim.launch.py` hiện truyền đúng literal Python `False`, và
+contract test khóa giá trị này.
+
+Validation được chạy trong Conda `py312`:
+
+```bash
+conda activate py312
+source /opt/ros/jazzy/setup.bash
+colcon build --symlink-install \
+  --packages-select openarm_skeleton_v1_2_navigation
+PYTEST_DISABLE_PLUGIN_AUTOLOAD=1 python -m pytest -q \
+  src/openarm_skeleton_v1_2_navigation/test/test_navigation_contract.py
+```
+
+```text
+Build: 1 package finished
+Navigation contract: 10 passed
+```
+
+Runtime dùng map đã lưu và memory fixture sáu object:
+
+```bash
+conda activate py312
+source /opt/ros/jazzy/setup.bash
+source install/setup.bash
+source ../flzat_enviroment_memory/install/setup.bash
+export ROS_DOMAIN_ID=10
+ros2 launch environment_memory memory_assistant.launch.py \
+  environment_id:=hotel_demo_14_seeded \
+  map_id:=a8228e3b-eb9d-467c-8230-006684dfbbec \
+  storage_root:=/home/phucnv/.local/share/flzat/environment_memory \
+  headless:=false use_rviz:=true use_sim_time:=true \
+  whisper_language:=vi
+```
+
+Vì đây là saved-map localization, AMCL được cấp initial pose tại vị trí spawn
+Mode 1 `(x=0, y=0, yaw=0)` trước khi gửi goal. Kết quả:
+
+```text
+Map: hotel_demo_14.yaml, 311 x 232, 0.05 m/cell
+Localization lifecycle: active
+Navigation lifecycle: active
+Text query: find the bench
+Top result: bench in entrance
+Text navigation: go to the bench
+Nav2: from (0.03, 0.03) to safe approach (1.35, 0.40)
+Result: Reached the goal; Goal succeeded
+Final AMCL pose: (1.281, 0.361), frame=map
+planner_server/controller_server/bt_navigator: active [3]
+```
+
+Full launch và text-command log:
+
+```text
+/home/phucnv/.local/state/flzat/environment_memory/logs/
+  hotel_demo_14_seeded_mode2/20260831_clean_02/
+    command.txt
+    terminal.log
+    ros/
+```
+
+RViz vẫn ghi lỗi GLSL `active samplers with a different type ...`; đây là lỗi
+render display trên host và không chặn map, costmap, AMCL, Nav2 action hoặc
+goal. Launch được dừng bằng `Ctrl+C` sau acceptance.
+
+### Automatic AMCL hotel-spawn initialization — 2026-08-31
+
+Saved-map hotel profile hiện đặt `amcl.set_initial_pose=true` với pose map
+`(x=0, y=0, z=0, yaw=0)`. Đây là cùng fixed Gazebo spawn nơi phiên SLAM hotel
+bắt đầu. `always_reset_initial_pose=false` nên `2D Pose Estimate` vẫn có thể
+ghi đè pose sau startup.
+
+Validation dưới Conda `py312`:
+
+```text
+Navigation build: PASS
+Navigation contract: 11 passed
+Headless localization smoke test, no /initialpose publication:
+  AMCL: initialPoseReceived
+  AMCL: Setting pose ... 0.000 0.000 0.000
+  global_costmap: start
+  localization lifecycle: Managed nodes are active
+  navigation lifecycle: Managed nodes are active
+Shutdown: all launched processes finished cleanly
+```
+
+Runtime dùng `ROS_DOMAIN_ID=211`, map seeded hotel và Gazebo partition
+`openarm_auto_initial_pose_acceptance`. Log ROS nằm tại
+`/tmp/openarm_auto_initial_pose_logs/2026-08-31-15-36-11-341997-phucnv-Vostro-3580-67151`.

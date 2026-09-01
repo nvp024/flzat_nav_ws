@@ -1,4 +1,4 @@
-<!-- Replan at 1 Hz, smooth the NavFn grid path, then track the smooth path. -->
+<!-- Replan at 1 Hz and track the raw NavFn path. Path smoothing is temporarily disabled. -->
 <root BTCPP_format="4" main_tree_to_execute="MainTree">
   <BehaviorTree ID="MainTree">
     <RecoveryNode number_of_retries="6" name="NavigateRecovery">
@@ -8,8 +8,10 @@
         <RateController hz="1.0">
           <RecoveryNode number_of_retries="1" name="ComputeAndSmoothPath">
             <Sequence>
-              <ComputePathToPose goal="{goal}" path="{raw_path}" planner_id="{selected_planner}" error_code_id="{compute_path_error_code}"/>
+              <ComputePathToPose goal="{goal}" path="{path}" planner_id="{selected_planner}" error_code_id="{compute_path_error_code}"/>
+              <!-- Disabled after repeated SMOOTHED_PATH_IN_COLLISION failures on valid NavFn goals.
               <SmoothPath unsmoothed_path="{raw_path}" smoothed_path="{path}" smoother_id="simple_smoother" max_smoothing_duration="0.5" check_for_collisions="true" error_code_id="{smoothing_path_error_code}"/>
+              -->
             </Sequence>
             <Sequence>
               <Fallback>

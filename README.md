@@ -168,10 +168,12 @@ quay. Nếu map đã được tạo trước bản sửa trục bánh xe ngày 2
 sử dụng map đó; hãy dừng launch và tạo map mới từ một session sạch.
 
 Lidar simulation dùng tầm quét 20 m để quan sát hết hotel lobby ngay từ vị trí
-spawn. Nav2 dùng behavior tree của workspace để đưa đường NavFn qua
-`SimpleSmoother` trước khi điều khiển robot. Hai phần này tránh việc planner đi
-vòng chữ S chỉ để bám vào các ô đã được lidar 8 m cũ quan sát. Robot vẫn sẽ
-chủ động đi cong khi đường thẳng có vật cản; đó là hành vi đúng của Nav2.
+spawn. Nav2 hiện cho controller bám trực tiếp đường NavFn; node `SmoothPath`
+được giữ dưới dạng comment trong behavior tree nhưng tạm tắt vì collision check
+của `SimpleSmoother` làm các goal xa hoặc cong bị abort trước khi tới
+`FollowPath`. Velocity smoother và watchdog vẫn hoạt động bình thường. Robot
+vẫn sẽ chủ động đi cong khi đường thẳng có vật cản; đó là hành vi đúng của
+Nav2.
 
 GUI hotel/Nav2 không hiển thị nút **Reset world**. Robot được spawn động sau
 khi world SDF đã load; full reset sẽ xóa robot, đưa `/clock` về 0 và làm dữ
@@ -192,7 +194,11 @@ Chạy localization với map đã lưu:
   slam:=false map:="$(pwd)/maps/hotel.yaml"
 ```
 
-Sau khi đặt `2D Pose Estimate` trong RViz, dùng `Nav2 Goal` để gửi goal.
+Profile hotel tự khởi tạo AMCL tại pose map `(0, 0, 0)`, tương ứng vị trí
+Gazebo spawn cố định nơi phiên SLAM bắt đầu, nên global costmap có thể activate
+mà không cần click `2D Pose Estimate`. Công cụ `2D Pose Estimate` vẫn có thể
+ghi đè pose nếu cần. Không dùng giá trị mặc định này cho map hoặc vị trí spawn
+khác; khi đó phải cấu hình lại `amcl.initial_pose` theo pose khởi tạo thực tế.
 
 Kiểm tra Nav2 tự động bằng action result và `/odom`:
 

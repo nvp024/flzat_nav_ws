@@ -270,7 +270,7 @@ def _launch_setup(context):
         ]
 
     delayed_robot = TimerAction(
-        period=2.0,
+        period=5.0,
         actions=[state_publisher, spawner],
     )
     return [

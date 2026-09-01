@@ -17,8 +17,8 @@ from launch.substitutions import LaunchConfiguration
 from launch_ros.actions import Node
 
 
-NAVIGATION_START_DELAY_SECONDS = 7.0
-RVIZ_START_DELAY_SECONDS = 9.0
+NAVIGATION_START_DELAY_SECONDS = 10.0
+RVIZ_START_DELAY_SECONDS = 12.0
 
 
 def _validate_mode(context):
@@ -53,6 +53,11 @@ def generate_launch_description():
             str(gazebo_share / "launch" / "hotel_demo.launch.py")
         ),
         launch_arguments={
+            "world": str(
+                gazebo_share / "worlds" / "hotel_lobby_demo.sdf"
+            ),
+            "world_name": "hotel_lobby",
+            "robot_name": "openarm_skeleton_hotel",
             "auto_run": "false",
             "headless": LaunchConfiguration("headless"),
             "use_sim_time": use_sim_time,
@@ -83,7 +88,9 @@ def generate_launch_description():
             "use_sim_time": use_sim_time,
             "autostart": autostart,
             "params_file": params_file,
-            "use_composition": "false",
+            # Nav2 Jazzy evaluates ``not <use_composition>`` as a Python
+            # expression, so this literal must use Python boolean casing.
+            "use_composition": "False",
             "use_respawn": "false",
         }.items(),
     )

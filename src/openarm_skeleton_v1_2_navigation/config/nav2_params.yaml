@@ -11,6 +11,15 @@ amcl:
     beam_skip_threshold: 0.3
     do_beamskip: false
     global_frame_id: map
+    # Hotel maps are created with the fixed Gazebo spawn as map origin.
+    # Initialize AMCL there so saved-map mode can activate Nav2 unattended.
+    always_reset_initial_pose: false
+    set_initial_pose: true
+    initial_pose:
+      x: 0.0
+      y: 0.0
+      z: 0.0
+      yaw: 0.0
     lambda_short: 0.1
     laser_likelihood_max_dist: 2.0
     laser_max_range: 20.0

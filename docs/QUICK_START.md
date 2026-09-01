@@ -132,9 +132,12 @@ ros2 run nav2_map_server map_saver_cli -f "$(pwd)/maps/hotel"
 
 Trong RViz:
 
-1. Chọn `2D Pose Estimate` để đặt initial pose.
+1. Chờ AMCL tự khởi tạo tại pose map `(0, 0, 0)` của hotel spawn cố định.
 2. Chọn `Nav2 Goal` để gửi goal.
 3. Quan sát global plan, local costmap và `/cmd_vel_safe`.
+
+`2D Pose Estimate` vẫn có thể ghi đè pose tự động. Nếu dùng map hoặc vị trí
+spawn khác hotel profile, phải đặt lại initial pose đúng thay vì giữ `(0,0,0)`.
 
 ## 6. Safety command path
 
