@@ -92,15 +92,15 @@ def test_hotel_world_and_route_landmarks_are_local_assets():
     partition = world.find("./model[@name='living_kitchen_partition']")
     assert partition is not None
     assert tuple(float(value) for value in partition.findtext("pose").split()) \
-        == pytest.approx((1.25, 4.325, 1.20, 0.0, 0.0, 0.0))
+        == pytest.approx((1.65, 3.60, 1.20, 0.0, 0.0, 0.0))
     partition_size = partition.findtext(
         "./link/collision[@name='partition_collision']/geometry/box/size"
     )
     assert tuple(float(value) for value in partition_size.split()) \
-        == pytest.approx((0.18, 2.75, 2.40))
-    kitchen_door_south = 1.65 + (0.18 / 2.0)
-    kitchen_door_north = 4.325 - (2.75 / 2.0)
-    assert kitchen_door_north - kitchen_door_south == pytest.approx(1.21)
+        == pytest.approx((0.18, 4.20, 2.40))
+    kitchen_door_south = 0.00 + (0.18 / 2.0)
+    kitchen_door_north = 3.60 - (4.20 / 2.0)
+    assert kitchen_door_north - kitchen_door_south == pytest.approx(1.41)
     assert not root.findall(".//include")
     assert not root.findall(".//uri")
 
@@ -116,21 +116,48 @@ def test_living_room_and_bedroom_have_deliberate_clear_layouts():
     # The coffee table is centered between a west sofa, north sofa and south
     # armchair, and all three seats face inward toward the television area.
     assert model_pose("lobby_sofa_west") == pytest.approx(
-        (-2.70, 3.40, 0.225, 0.0, 0.0, 1.570796326794897)
+        (-3.40, 3.25, 0.225, 0.0, 0.0, 1.570796326794897)
     )
     assert model_pose("lobby_sofa_north") == pytest.approx(
-        (-1.15, 4.75, 0.225, 0.0, 0.0, 3.141592653589793)
+        (-1.35, 4.65, 0.225, 0.0, 0.0, 3.141592653589793)
     )
     assert model_pose("lobby_coffee_table") == pytest.approx(
-        (-1.15, 3.40, 0.12, 0.0, 0.0, 0.0)
+        (-1.35, 3.15, 0.12, 0.0, 0.0, 0.0)
     )
     assert model_pose("living_armchair_south") == pytest.approx(
-        (-1.15, 2.05, 0.235, 0.0, 0.0, 3.141592653589793)
+        (-1.35, 1.65, 0.235, 0.0, 0.0, 3.141592653589793)
     )
+    # Collision-to-collision gaps around the central table are deliberately
+    # wide enough to avoid the previous narrow traps between furniture.
+    north_gap = (4.65 - 0.25) - (3.15 + 0.325)
+    south_gap = (3.15 - 0.325) - (1.65 + 0.275)
+    west_gap = (-1.35 - 0.325) - (-3.40 + 0.25)
+    assert north_gap == pytest.approx(0.925)
+    assert south_gap == pytest.approx(0.90)
+    assert west_gap == pytest.approx(1.475)
+    sofa_side_table_gap = (3.25 - (1.40 / 2.0)) - (1.40 + 0.20)
+    fan_chest_gap = (-4.90 - (0.65 / 2.0)) - (-6.35 + (0.35 / 2.0))
+    assert sofa_side_table_gap == pytest.approx(0.95)
+    assert fan_chest_gap == pytest.approx(0.95)
+    tv_east_edge = model_pose("living_tv_unit")[0] + (0.45 / 2.0)
+    partition_west_edge = model_pose("living_kitchen_partition")[0] - (
+        0.18 / 2.0
+    )
+    assert partition_west_edge - tv_east_edge == pytest.approx(0.985)
+
+    kitchen_counter = model_pose("kitchen_counter_set")
+    kitchen_microwave = model_pose("kitchen_microwave")
+    kitchen_refrigerator = model_pose("kitchen_refrigerator")
+    assert kitchen_counter[:2] == pytest.approx((3.80, 5.46))
+    assert kitchen_microwave[:2] == pytest.approx((4.80, 5.44))
+    assert kitchen_refrigerator[:2] == pytest.approx((6.55, 5.42))
+    # The counter top and refrigerator meet the north inner wall at y=5.70.
+    assert kitchen_counter[1] - 0.01 + (0.50 / 2.0) == pytest.approx(5.70)
+    assert kitchen_refrigerator[1] + (0.56 / 2.0) == pytest.approx(5.70)
 
     upper_wall = model_pose("bedroom_partition_west")
     lower_wall = model_pose("bedroom_partition_west_lower")
-    upper_south_edge = upper_wall[1] - (2.45 / 2.0)
+    upper_south_edge = upper_wall[1] - (0.80 / 2.0)
     lower_north_edge = lower_wall[1] + (3.50 / 2.0)
     lower_south_edge = lower_wall[1] - (3.50 / 2.0)
     assert upper_south_edge - lower_north_edge == pytest.approx(1.40)
@@ -138,8 +165,27 @@ def test_living_room_and_bedroom_have_deliberate_clear_layouts():
     assert lower_north_edge < -1.50 < upper_south_edge
     # The lower wall now meets the building's inner south-wall face directly.
     assert lower_south_edge == pytest.approx(-5.70)
-    assert model_pose("bedroom_partition_north")[1] == pytest.approx(1.65)
-    assert model_pose("bedroom_bed")[1] == pytest.approx(-1.30)
+    assert model_pose("bedroom_partition_north")[1] == pytest.approx(0.00)
+    # Both rooms use the same east/west bounds and equal depth about y=0.
+    assert model_pose("living_kitchen_partition")[0] == pytest.approx(
+        upper_wall[0]
+    )
+    bed = model_pose("bedroom_bed")
+    assert bed[:2] == pytest.approx((6.60, -0.69))
+    # The bed is flush with both inner wall faces in the north-east corner.
+    assert 7.70 - (bed[0] + (2.20 / 2.0)) == pytest.approx(0.0)
+    assert -0.09 - (bed[1] + (1.20 / 2.0)) == pytest.approx(0.0)
+    wardrobe = model_pose("bedroom_wardrobe")
+    nightstand = model_pose("bedroom_nightstand")
+    assert wardrobe[:2] == pytest.approx((3.00, -0.34))
+    assert -0.09 - (wardrobe[1] + (0.50 / 2.0)) == pytest.approx(0.0)
+    assert nightstand[:2] == pytest.approx((7.49, -1.65))
+    assert 7.70 - (nightstand[0] + (0.42 / 2.0)) == pytest.approx(0.0)
+
+    desk_books = world.find("./model[@name='bedroom_desk_books']")
+    assert desk_books is not None
+    book_visuals = desk_books.findall("./link/visual")
+    assert len(book_visuals) == 7
 
 
 def test_launches_reference_the_hotel_and_local_package():

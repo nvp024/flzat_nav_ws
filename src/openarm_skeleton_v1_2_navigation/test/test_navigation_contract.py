@@ -57,6 +57,12 @@ def test_amcl_auto_initializes_at_the_fixed_hotel_spawn():
     }
 
 
+def test_map_saver_waits_for_the_transient_local_slam_map():
+    map_saver = _params()["map_saver"]["ros__parameters"]
+    assert map_saver["save_map_timeout"] == 10.0
+    assert map_saver["map_subscribe_transient_local"] is True
+
+
 def test_velocity_chain_keeps_the_independent_watchdog_boundary():
     launch = NAVIGATION_LAUNCH.read_text(encoding="utf-8")
     assert '("cmd_vel", "cmd_vel_nav")' in launch
