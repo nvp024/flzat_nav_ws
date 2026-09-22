@@ -20,7 +20,9 @@ install(
 )
 
 install(
-  FILES scripts/isaac_scenes.py
+  FILES
+    scripts/isaac_scenes.py
+    scripts/isaac_sdf_scene.py
   DESTINATION lib/${PROJECT_NAME}
 )
 

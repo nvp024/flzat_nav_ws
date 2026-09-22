@@ -18,12 +18,19 @@ MESHES = DESCRIPTION / "meshes"
 PREPARE = PACKAGE / "scripts" / "prepare_isaac_urdf.py"
 SIMULATOR = PACKAGE / "scripts" / "openarm_isaac_sim.py"
 SCENES = PACKAGE / "scripts" / "isaac_scenes.py"
+SDF_SCENE = PACKAGE / "scripts" / "isaac_sdf_scene.py"
 CHECKER = PACKAGE / "scripts" / "check_isaac_runtime.py"
 COMMAND_CONDITIONER = PACKAGE / "scripts" / "condition_isaac_cmd_vel.py"
 ODOMETRY_CORRECTOR = PACKAGE / "scripts" / "correct_isaac_odometry.py"
 LAUNCH = PACKAGE / "launch" / "isaac_nav2.launch.py"
 RUNNER = WORKSPACE / "scripts" / "run_isaac_nav2.sh"
 HOST_CHECK = WORKSPACE / "scripts" / "check_isaac_host.sh"
+HOTEL_WORLD = (
+    PACKAGE.parent
+    / "openarm_skeleton_v1_2_gazebo"
+    / "worlds"
+    / "hotel_lobby_demo.sdf"
+)
 
 ACTIVE_BASE_JOINTS = {
     "caster_joint_1",
@@ -44,6 +51,13 @@ def _load_prepare_module():
 
 def _load_scenes_module():
     spec = importlib.util.spec_from_file_location("isaac_scenes", SCENES)
+    module = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(module)
+    return module
+
+
+def _load_sdf_scene_module():
+    spec = importlib.util.spec_from_file_location("isaac_sdf_scene", SDF_SCENE)
     module = importlib.util.module_from_spec(spec)
     spec.loader.exec_module(module)
     return module
@@ -124,35 +138,67 @@ def test_simulator_uses_verified_ros_and_drive_contracts():
     assert "gz::sim" not in source
 
 
-def test_hotel_and_restaurant_scenes_are_distinct_and_spawn_clear():
+def test_restaurant_procedural_scene_remains_spawn_clear():
     scenes = _load_scenes_module()
     assert scenes.SCENE_NAMES == ("hotel", "restaurant")
-    assert set(scenes.SCENE_OBJECTS) == set(scenes.SCENE_NAMES)
-    assert len(scenes.get_scene_objects("hotel")) >= 14
+    assert set(scenes.SCENE_OBJECTS) == {"restaurant"}
     assert len(scenes.get_scene_objects("restaurant")) >= 28
 
-    signatures = set()
-    for scene_name in scenes.SCENE_NAMES:
-        objects = scenes.get_scene_objects(scene_name)
-        names = [item["name"] for item in objects]
-        assert len(names) == len(set(names))
-        assert {
-            "north_wall",
-            "south_wall",
-            "east_wall",
-            "west_wall",
-        } <= set(names)
-        signatures.add(tuple(names))
-        for item in objects:
-            x, y, _z = item["position"]
-            width, depth, height = item["scale"]
-            assert min(width, depth, height) > 0.0
-            nearest_x = max(abs(x) - width / 2.0, 0.0)
-            nearest_y = max(abs(y) - depth / 2.0, 0.0)
-            assert math.hypot(nearest_x, nearest_y) >= (
-                scenes.ROBOT_SPAWN_CLEARANCE_METERS
-            )
-    assert len(signatures) == len(scenes.SCENE_NAMES)
+    objects = scenes.get_scene_objects("restaurant")
+    names = [item["name"] for item in objects]
+    assert len(names) == len(set(names))
+    assert {
+        "north_wall",
+        "south_wall",
+        "east_wall",
+        "west_wall",
+    } <= set(names)
+    for item in objects:
+        x, y, _z = item["position"]
+        width, depth, height = item["scale"]
+        assert min(width, depth, height) > 0.0
+        nearest_x = max(abs(x) - width / 2.0, 0.0)
+        nearest_y = max(abs(y) - depth / 2.0, 0.0)
+        assert math.hypot(nearest_x, nearest_y) >= (
+            scenes.ROBOT_SPAWN_CLEARANCE_METERS
+        )
+
+
+def test_hotel_is_loaded_from_gazebo_sdf_in_slam_start_frame():
+    module = _load_sdf_scene_module()
+    primitives = module.load_hotel_primitives(HOTEL_WORLD)
+    assert len(primitives) >= 190
+    assert {item.role for item in primitives} == {"visual", "collision"}
+    assert {item.shape for item in primitives} == {
+        "box",
+        "cylinder",
+        "sphere",
+        "plane",
+    }
+    assert len({item.name for item in primitives}) == len(primitives)
+    assert not any("reception_main_counter" in item.name for item in primitives)
+
+    by_name = {item.name: item for item in primitives}
+    east_wall = by_name["visual__east_wall__link__visual"]
+    assert all(
+        math.isclose(actual, expected, abs_tol=1.0e-9)
+        for actual, expected in zip(
+            east_wall.position, (19.05, 3.5, 1.4)
+        )
+    )
+    assert east_wall.scale == (0.30, 12.0, 2.8)
+    corridor_end = by_name[
+        "visual__entry_corridor_end_wall__link__visual"
+    ]
+    assert math.isclose(corridor_end.position[0], -0.95, abs_tol=1.0e-9)
+    assert corridor_end.position[1:] == (0.0, 1.4)
+    start_zone = by_name["visual__hotel_start_zone__link__visual"]
+    assert start_zone.position == (0.0, 0.0, 0.015)
+
+    source = SDF_SCENE.read_text(encoding="utf-8")
+    ast.parse(source)
+    assert "GAZEBO_HOTEL_SPAWN = (-11.2, -3.5, 0.0)" in source
+    assert "unsupported SDF geometry" in source
 
 
 def test_simulator_selects_and_reports_requested_scene():
@@ -161,7 +207,11 @@ def test_simulator_selects_and_reports_requested_scene():
         'parser.add_argument("--scene", choices=SCENE_NAMES, default="hotel")'
         in source
     )
-    assert "_create_scene(world, FixedCuboid, np, args.scene)" in source
+    assert '"--hotel-world"' in source
+    assert "load_hotel_primitives(hotel_world)" in source
+    assert "VisualCuboid" in source
+    assert "FixedCylinder" in source
+    assert "FixedSphere" in source
     assert 'print(f"  scene: {args.scene}", flush=True)' in source
 
 
@@ -179,6 +229,7 @@ def test_launch_is_a_single_gated_isaac_nav2_entry_point():
     assert {
         "start_isaac",
         "scene",
+        "hotel_world",
         "isaac_sim_path",
         "headless",
         "startup_timeout",
@@ -191,6 +242,8 @@ def test_launch_is_a_single_gated_isaac_nav2_entry_point():
     } <= declared
     assert "openarm_isaac_sim.py" in source
     assert '"--scene"' in source
+    assert '"--hotel-world"' in source
+    assert '"hotel_lobby_demo.sdf"' in source
     assert 'scene not in {"hotel", "restaurant"}' in source
     assert "correct_isaac_odometry.py" in source
     assert "condition_isaac_cmd_vel.py" in source

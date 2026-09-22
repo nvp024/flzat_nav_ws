@@ -774,3 +774,28 @@ Tests: 50 tests, 0 errors, 0 failures, 0 skipped
 Isaac runtime: not run on this host
 Gazebo runtime: not rerun; existing Gazebo source was preserved
 ```
+
+### Shared Gazebo/Isaac hotel geometry — 2026-09-22
+
+Mode 2 runtime trên máy Isaac cho thấy saved map `demo_5` được load đúng,
+nhưng live `/scan` lại đến từ scene hotel primitive cũ chỉ rộng khoảng
+`10 x 9 m`. Vì vậy scan không trùng occupancy map Gazebo hiện tại và goal tới
+bed tại `x≈17.33 m` không thể lập kế hoạch.
+
+Nhánh Isaac `scene:=hotel` hiện đọc trực tiếp
+`hotel_lobby_demo.sdf`, giữ riêng visual và collision, hỗ trợ box, cylinder,
+sphere và plane. Pose được đổi từ Gazebo world sang frame khởi đầu SLAM bằng
+spawn cố định `(-11.2, -3.5, 0)`. Parser đọc được 215 primitive: 168 visual và
+47 collision. Biên tâm primitive sau phép đổi là `x=-0.95..19.05 m`,
+`y=-2.35..9.35 m`, phù hợp biên saved map ghi trong log Mode 2.
+
+Validation trên host không cài/chạy Isaac Sim:
+
+```text
+Isaac package build: PASS
+Isaac contract: 13 passed
+Workspace test result: 51 tests, 0 errors, 0 failures, 0 skipped
+Installed launch: hotel_world resolves to installed hotel_lobby_demo.sdf
+Installed SDF parser: 215 primitives
+Isaac runtime after geometry change: not run on this host
+```

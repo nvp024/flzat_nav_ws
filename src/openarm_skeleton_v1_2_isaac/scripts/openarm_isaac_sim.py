@@ -23,6 +23,7 @@ import tempfile
 import traceback
 
 from isaac_scenes import SCENE_NAMES, get_scene_objects
+from isaac_sdf_scene import load_hotel_primitives
 from prepare_isaac_urdf import prepare_urdf
 
 
@@ -54,11 +55,19 @@ def _arguments():
     parser.add_argument("--headless", action="store_true")
     parser.add_argument("--max-frames", type=int, default=0)
     parser.add_argument("--scene", choices=SCENE_NAMES, default="hotel")
+    parser.add_argument(
+        "--hotel-world",
+        help=(
+            "Gazebo hotel_lobby_demo.sdf used as the shared hotel geometry"
+        ),
+    )
     parser.add_argument("--lidar-config", default="Example_Rotary_2D")
     parser.add_argument("--renderer", default="RayTracedLighting")
     args, _isaac_arguments = parser.parse_known_args()
     if args.max_frames < 0:
         parser.error("--max-frames must be zero or greater")
+    if args.scene == "hotel" and not args.hotel_world:
+        parser.error("--hotel-world is required for scene=hotel")
     return args
 
 
@@ -165,8 +174,87 @@ def _configure_joint_drives(stage, physics_schema):
         )
 
 
-def _create_scene(world, fixed_cuboid, np, scene_name):
+def _add_sdf_primitive(
+    world,
+    primitive,
+    np,
+    visual_cuboid,
+    visual_cylinder,
+    visual_sphere,
+    fixed_cuboid,
+    fixed_cylinder,
+    fixed_sphere,
+):
+    """Instantiate one parsed SDF primitive with its original role."""
+    if primitive.role == "collision" and primitive.shape == "plane":
+        return
+
+    visible = primitive.role == "visual"
+    common = {
+        "prim_path": f"/World/openarm_scene/hotel/{primitive.name}",
+        "name": f"openarm_hotel_{primitive.name}",
+        "position": np.array(primitive.position),
+        "orientation": np.array(primitive.orientation),
+        "color": np.array(primitive.color),
+    }
+    if primitive.shape in {"box", "plane"}:
+        object_type = visual_cuboid if visible else fixed_cuboid
+        scene_object = object_type(
+            **common,
+            scale=np.array(primitive.scale),
+            **({} if visible else {"visible": False}),
+        )
+    elif primitive.shape == "cylinder":
+        object_type = visual_cylinder if visible else fixed_cylinder
+        scene_object = object_type(
+            **common,
+            radius=primitive.radius,
+            height=primitive.height,
+            **({} if visible else {"visible": False}),
+        )
+    elif primitive.shape == "sphere":
+        object_type = visual_sphere if visible else fixed_sphere
+        scene_object = object_type(
+            **common,
+            radius=primitive.radius,
+            **({} if visible else {"visible": False}),
+        )
+    else:
+        raise RuntimeError(
+            f"unsupported parsed hotel primitive: {primitive.shape}"
+        )
+    world.scene.add(scene_object)
+
+
+def _create_scene(
+    world,
+    np,
+    scene_name,
+    hotel_world,
+    visual_cuboid,
+    visual_cylinder,
+    visual_sphere,
+    fixed_cuboid,
+    fixed_cylinder,
+    fixed_sphere,
+):
     world.scene.add_default_ground_plane()
+    if scene_name == "hotel":
+        primitives = load_hotel_primitives(hotel_world)
+        for primitive in primitives:
+            _add_sdf_primitive(
+                world,
+                primitive,
+                np,
+                visual_cuboid,
+                visual_cylinder,
+                visual_sphere,
+                fixed_cuboid,
+                fixed_cylinder,
+                fixed_sphere,
+            )
+        return len(primitives)
+
     for item in get_scene_objects(scene_name):
         name = item["name"]
         world.scene.add(
@@ -178,6 +266,7 @@ def _create_scene(world, fixed_cuboid, np, scene_name):
                 color=np.array(item["color"]),
             )
         )
+    return len(get_scene_objects(scene_name))
 
 
 def _create_lidar(
@@ -384,7 +473,14 @@ def main():
         import omni.usd
         from isaacsim.asset.importer.urdf import _urdf
         from isaacsim.core.api import World
-        from isaacsim.core.api.objects import FixedCuboid
+        from isaacsim.core.api.objects import (
+            FixedCuboid,
+            FixedCylinder,
+            FixedSphere,
+            VisualCuboid,
+            VisualCylinder,
+            VisualSphere,
+        )
         from pxr import Gf, Sdf, UsdLux, UsdPhysics
 
         world = World(
@@ -392,7 +488,18 @@ def main():
             physics_dt=1.0 / 60.0,
             rendering_dt=1.0 / 30.0,
         )
-        _create_scene(world, FixedCuboid, np, args.scene)
+        scene_primitive_count = _create_scene(
+            world,
+            np,
+            args.scene,
+            args.hotel_world,
+            VisualCuboid,
+            VisualCylinder,
+            VisualSphere,
+            FixedCuboid,
+            FixedCylinder,
+            FixedSphere,
+        )
         stage = omni.usd.get_context().get_stage()
         light = UsdLux.DomeLight.Define(
             stage, f"/World/openarm_scene/{args.scene}/light"
@@ -423,6 +530,9 @@ def main():
         world.play()
         print("OPENARM ISAAC READY", flush=True)
         print(f"  scene: {args.scene}", flush=True)
+        if args.scene == "hotel":
+            print(f"  shared hotel SDF: {args.hotel_world}", flush=True)
+        print(f"  scene primitives: {scene_primitive_count}", flush=True)
         print(f"  articulation: {robot_path}", flush=True)
         print(f"  lidar: {lidar_path}", flush=True)
         print(

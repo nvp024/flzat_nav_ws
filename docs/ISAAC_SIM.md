@@ -26,8 +26,10 @@ Việc build workspace không tự tải hay cài Isaac Sim. Chỉ
 
 NVIDIA ghi mức RAM tối thiểu của Isaac Sim 5.0 là 32 GB và GPU tối thiểu là
 RTX 4080. Máy này thấp hơn mức chính thức dù trước đây đã từng chạy được 5.0.
-Vì vậy integration này dùng room primitive nhỏ, không texture/camera và chỉ
-một RTX lidar. Không mở đồng thời Gazebo hoặc ứng dụng GPU nặng.
+Vì vậy integration này không texture/camera và chỉ dùng một RTX lidar. Scene
+`hotel` hiện được dựng từ chính `hotel_lobby_demo.sdf` của Gazebo để saved map
+và live scan dùng cùng geometry; scene `restaurant` vẫn là primitive nhẹ độc
+lập. Không mở đồng thời Gazebo hoặc ứng dụng GPU nặng.
 
 Nguồn chính thức:
 
@@ -90,11 +92,13 @@ Scene nhà hàng:
 ./scripts/run_isaac_nav2.sh scene:=restaurant
 ```
 
-`scene:=hotel` là mặc định. Hotel gồm sảnh lễ tân, sofa, bàn cà phê, vách hành
-lang, thang máy và xe hành lý. Restaurant có khu bếp/quầy phục vụ, bục đón
-khách và bốn cụm bàn ghế. Cả hai đều là scene primitive nhẹ có collision thật,
-được lidar nhìn thấy và có lối trống quanh vị trí spawn. Chúng không phải asset
-khách sạn/nhà hàng photorealistic.
+`scene:=hotel` là mặc định. Hotel được đọc từ file SDF đang dùng bởi Gazebo,
+bao gồm hành lang spawn, tường, phòng khách, bếp, phòng ngủ và các object hiện
+tại. Loader giữ visual/collision riêng, hỗ trợ box, cylinder, sphere và plane,
+đồng thời đổi toàn bộ pose từ Gazebo world sang frame khởi đầu SLAM tại robot.
+Nhờ đó map đã quét từ Gazebo có thể dùng cho Isaac nếu SDF không đổi.
+Restaurant có khu bếp/quầy phục vụ, bục đón khách và bốn cụm bàn ghế, vẫn là
+scene primitive nhẹ độc lập. Hai scene chưa phải asset photorealistic.
 
 Wrapper trên gọi đúng một ROS launch:
 

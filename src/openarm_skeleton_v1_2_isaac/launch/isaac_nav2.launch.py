@@ -129,6 +129,9 @@ def _launch_setup(context):
         / "openarm_skeleton_v1_2_base_demo.urdf"
     )
     mesh_directory = description_share / "meshes"
+    hotel_world = Path(
+        LaunchConfiguration("hotel_world").perform(context).strip()
+    ).expanduser()
     runner = (
         isaac_prefix
         / "lib"
@@ -142,6 +145,8 @@ def _launch_setup(context):
     ):
         if not path.exists():
             raise RuntimeError(f"{label} not found: {path}")
+    if scene == "hotel" and not hotel_world.is_file():
+        raise RuntimeError(f"shared Gazebo hotel SDF not found: {hotel_world}")
 
     simulator = None
     actions = []
@@ -166,6 +171,8 @@ def _launch_setup(context):
             str(mesh_directory),
             "--scene",
             scene,
+            "--hotel-world",
+            str(hotel_world),
             "--max-frames",
             LaunchConfiguration("max_frames").perform(context),
             "--lidar-config",
@@ -183,8 +190,13 @@ def _launch_setup(context):
             [
                 LogInfo(
                     msg=(
-                        f"Starting the light OpenArm Isaac {scene} scene; "
-                        "Nav2 waits "
+                        f"Starting the OpenArm Isaac {scene} scene; "
+                        + (
+                            f"shared SDF={hotel_world}; "
+                            if scene == "hotel"
+                            else ""
+                        )
+                        + "Nav2 waits "
                         "for /clock, /scan, /odom, /joint_states and TF."
                     )
                 ),
@@ -363,6 +375,9 @@ def generate_launch_description():
     navigation_share = Path(
         get_package_share_directory("openarm_skeleton_v1_2_navigation")
     )
+    gazebo_share = Path(
+        get_package_share_directory("openarm_skeleton_v1_2_gazebo")
+    )
     return LaunchDescription(
         [
             DeclareLaunchArgument("start_isaac", default_value="true"),
@@ -370,6 +385,15 @@ def generate_launch_description():
                 "scene",
                 default_value="hotel",
                 description="Isaac environment: hotel or restaurant",
+            ),
+            DeclareLaunchArgument(
+                "hotel_world",
+                default_value=str(
+                    gazebo_share / "worlds" / "hotel_lobby_demo.sdf"
+                ),
+                description=(
+                    "Shared Gazebo SDF used to construct the Isaac hotel"
+                ),
             ),
             DeclareLaunchArgument(
                 "isaac_sim_path",
