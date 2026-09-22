@@ -250,7 +250,7 @@
 
     <model name="lobby_sofa_west">
       <static>true</static>
-      <pose>-3.40 3.25 0.225 0 0 1.570796326794897</pose>
+      <pose>-3.40 3.00 0.225 0 0 1.570796326794897</pose>
       <link name="sofa_link">
         <collision name="sofa_collision">
           <geometry><box><size>1.4 0.5 0.45</size></box></geometry>
@@ -292,7 +292,7 @@
 
     <model name="lobby_sofa_north">
       <static>true</static>
-      <pose>-1.35 4.65 0.225 0 0 3.141592653589793</pose>
+      <pose>-1.35 4.40 0.225 0 0 3.141592653589793</pose>
       <link name="sofa_link">
         <collision name="sofa_collision">
           <geometry><box><size>1.25 0.5 0.45</size></box></geometry>
@@ -318,7 +318,7 @@
 
     <model name="lobby_coffee_table">
       <static>true</static>
-      <pose>-1.35 3.15 0.12 0 0 0</pose>
+      <pose>-1.35 2.90 0.12 0 0 0</pose>
       <link name="table_link">
         <collision name="table_collision">
           <geometry><cylinder><radius>0.325</radius><length>0.24</length></cylinder></geometry>
@@ -658,7 +658,7 @@
 
     <model name="center_woven_basket">
       <static>true</static>
-      <pose>0.15 1.60 0.14 0 0 0</pose>
+      <pose>0.15 1.35 0.14 0 0 0</pose>
       <link name="basket_link">
         <collision name="basket_collision">
           <geometry><cylinder><radius>0.175</radius><length>0.28</length></cylinder></geometry>
@@ -713,7 +713,7 @@
          opposite the sofa group instead of in the navigation aisle. -->
     <model name="living_tv_unit">
       <static>true</static>
-      <pose>0.35 3.15 0.25 0 0 0</pose>
+      <pose>0.35 2.90 0.25 0 0 0</pose>
       <link name="tv_unit_link">
         <collision name="console_collision">
           <geometry><box><size>0.45 1.10 0.50</size></box></geometry>
@@ -752,7 +752,7 @@
     <!-- Side table belongs to the west sofa and holds small indoor props. -->
     <model name="living_side_table">
       <static>true</static>
-      <pose>-3.40 1.40 0.18 0 0 0</pose>
+      <pose>-3.40 1.15 0.18 0 0 0</pose>
       <link name="side_table_link">
         <collision name="side_table_collision">
           <geometry><cylinder><radius>0.20</radius><length>0.36</length></cylinder></geometry>
@@ -784,7 +784,7 @@
          Together with the two sofas it forms a U around the coffee table. -->
     <model name="living_armchair_south">
       <static>true</static>
-      <pose>-1.35 1.65 0.235 0 0 3.141592653589793</pose>
+      <pose>-1.35 1.40 0.235 0 0 3.141592653589793</pose>
       <link name="armchair_link">
         <collision name="armchair_collision">
           <geometry><box><size>0.55 0.55 0.47</size></box></geometry>
@@ -815,7 +815,7 @@
     <!-- A plant anchors the open south-west corner of the seating group. -->
     <model name="living_floor_plant">
       <static>true</static>
-      <pose>-5.10 2.00 0.24 0 0 0</pose>
+      <pose>-5.10 1.75 0.24 0 0 0</pose>
       <link name="living_plant_link">
         <collision name="living_plant_collision">
           <geometry><cylinder><radius>0.21</radius><length>0.48</length></cylinder></geometry>
@@ -840,7 +840,7 @@
     <!-- Small items are grouped into one model on top of the coffee table. -->
     <model name="living_coffee_table_decor">
       <static>true</static>
-      <pose>-1.35 3.15 0.29 0 0 0</pose>
+      <pose>-1.35 2.90 0.29 0 0 0</pose>
       <link name="coffee_decor_link">
         <collision name="coffee_decor_collision">
           <geometry><box><size>0.30 0.20 0.08</size></box></geometry>
@@ -987,7 +987,7 @@
 
     <model name="kitchen_refrigerator">
       <static>true</static>
-      <pose>6.55 5.42 0.68 0 0 0</pose>
+      <pose>7.41 5.42 0.68 0 0 0</pose>
       <link name="refrigerator_link">
         <collision name="refrigerator_collision">
           <geometry><box><size>0.58 0.56 1.36</size></box></geometry>

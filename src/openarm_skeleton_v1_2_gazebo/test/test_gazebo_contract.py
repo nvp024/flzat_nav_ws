@@ -164,26 +164,26 @@ def test_living_room_and_bedroom_have_deliberate_clear_layouts():
     # The coffee table is centered between a west sofa, north sofa and south
     # armchair, and all three seats face inward toward the television area.
     assert model_pose("lobby_sofa_west") == pytest.approx(
-        (-3.40, 3.25, 0.225, 0.0, 0.0, 1.570796326794897)
+        (-3.40, 3.00, 0.225, 0.0, 0.0, 1.570796326794897)
     )
     assert model_pose("lobby_sofa_north") == pytest.approx(
-        (-1.35, 4.65, 0.225, 0.0, 0.0, 3.141592653589793)
+        (-1.35, 4.40, 0.225, 0.0, 0.0, 3.141592653589793)
     )
     assert model_pose("lobby_coffee_table") == pytest.approx(
-        (-1.35, 3.15, 0.12, 0.0, 0.0, 0.0)
+        (-1.35, 2.90, 0.12, 0.0, 0.0, 0.0)
     )
     assert model_pose("living_armchair_south") == pytest.approx(
-        (-1.35, 1.65, 0.235, 0.0, 0.0, 3.141592653589793)
+        (-1.35, 1.40, 0.235, 0.0, 0.0, 3.141592653589793)
     )
     # Collision-to-collision gaps around the central table are deliberately
     # wide enough to avoid the previous narrow traps between furniture.
-    north_gap = (4.65 - 0.25) - (3.15 + 0.325)
-    south_gap = (3.15 - 0.325) - (1.65 + 0.275)
+    north_gap = (4.40 - 0.25) - (2.90 + 0.325)
+    south_gap = (2.90 - 0.325) - (1.40 + 0.275)
     west_gap = (-1.35 - 0.325) - (-3.40 + 0.25)
     assert north_gap == pytest.approx(0.925)
     assert south_gap == pytest.approx(0.90)
     assert west_gap == pytest.approx(1.475)
-    sofa_side_table_gap = (3.25 - (1.40 / 2.0)) - (1.40 + 0.20)
+    sofa_side_table_gap = (3.00 - (1.40 / 2.0)) - (1.15 + 0.20)
     fan_chest_gap = (-4.90 - (0.65 / 2.0)) - (-6.35 + (0.35 / 2.0))
     assert sofa_side_table_gap == pytest.approx(0.95)
     assert fan_chest_gap == pytest.approx(0.95)
@@ -198,10 +198,11 @@ def test_living_room_and_bedroom_have_deliberate_clear_layouts():
     kitchen_refrigerator = model_pose("kitchen_refrigerator")
     assert kitchen_counter[:2] == pytest.approx((3.80, 5.46))
     assert kitchen_microwave[:2] == pytest.approx((4.80, 5.44))
-    assert kitchen_refrigerator[:2] == pytest.approx((6.55, 5.42))
-    # The counter top and refrigerator meet the north inner wall at y=5.70.
+    assert kitchen_refrigerator[:2] == pytest.approx((7.41, 5.42))
+    # The counter top meets the north wall; the refrigerator fills the corner.
     assert kitchen_counter[1] - 0.01 + (0.50 / 2.0) == pytest.approx(5.70)
     assert kitchen_refrigerator[1] + (0.56 / 2.0) == pytest.approx(5.70)
+    assert kitchen_refrigerator[0] + (0.58 / 2.0) == pytest.approx(7.70)
 
     upper_wall = model_pose("bedroom_partition_west")
     lower_wall = model_pose("bedroom_partition_west_lower")
