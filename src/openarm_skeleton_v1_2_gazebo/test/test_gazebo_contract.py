@@ -72,7 +72,6 @@ def test_hotel_world_and_route_landmarks_are_local_assets():
         "living_kitchen_partition",
         "living_tv_unit",
         "living_side_table",
-        "living_armchair_south",
         "living_floor_plant",
         "living_coffee_table_decor",
         "living_wall_art",
@@ -161,8 +160,7 @@ def test_living_room_and_bedroom_have_deliberate_clear_layouts():
         assert model is not None
         return tuple(float(value) for value in model.findtext("pose").split())
 
-    # The coffee table is centered between a west sofa, north sofa and south
-    # armchair, and all three seats face inward toward the television area.
+    # The coffee table remains centered between the two sofas and television.
     assert model_pose("lobby_sofa_west") == pytest.approx(
         (-3.40, 3.00, 0.225, 0.0, 0.0, 1.570796326794897)
     )
@@ -172,16 +170,11 @@ def test_living_room_and_bedroom_have_deliberate_clear_layouts():
     assert model_pose("lobby_coffee_table") == pytest.approx(
         (-1.35, 2.90, 0.12, 0.0, 0.0, 0.0)
     )
-    assert model_pose("living_armchair_south") == pytest.approx(
-        (-1.35, 1.40, 0.235, 0.0, 0.0, 3.141592653589793)
-    )
     # Collision-to-collision gaps around the central table are deliberately
-    # wide enough to avoid the previous narrow traps between furniture.
+    # wide enough to avoid narrow traps between furniture.
     north_gap = (4.40 - 0.25) - (2.90 + 0.325)
-    south_gap = (2.90 - 0.325) - (1.40 + 0.275)
     west_gap = (-1.35 - 0.325) - (-3.40 + 0.25)
     assert north_gap == pytest.approx(0.925)
-    assert south_gap == pytest.approx(0.90)
     assert west_gap == pytest.approx(1.475)
     sofa_side_table_gap = (3.00 - (1.40 / 2.0)) - (1.15 + 0.20)
     fan_chest_gap = (-4.90 - (0.65 / 2.0)) - (-6.35 + (0.35 / 2.0))

@@ -780,38 +780,6 @@
       </link>
     </model>
 
-    <!-- The armchair closes the south side of the living-room seating group.
-         Together with the two sofas it forms a U around the coffee table. -->
-    <model name="living_armchair_south">
-      <static>true</static>
-      <pose>-1.35 1.40 0.235 0 0 3.141592653589793</pose>
-      <link name="armchair_link">
-        <collision name="armchair_collision">
-          <geometry><box><size>0.55 0.55 0.47</size></box></geometry>
-        </collision>
-        <visual name="armchair_seat">
-          <pose>0 -0.04 -0.075 0 0 0</pose>
-          <geometry><box><size>0.50 0.46 0.18</size></box></geometry>
-          <material><diffuse>0.63 0.34 0.20 1</diffuse></material>
-        </visual>
-        <visual name="armchair_back">
-          <pose>0 0.22 0.09 0 0 0</pose>
-          <geometry><box><size>0.50 0.10 0.36</size></box></geometry>
-          <material><diffuse>0.63 0.34 0.20 1</diffuse></material>
-        </visual>
-        <visual name="armchair_left_arm">
-          <pose>-0.235 -0.02 0.02 0 0 0</pose>
-          <geometry><box><size>0.08 0.44 0.25</size></box></geometry>
-          <material><diffuse>0.54 0.27 0.16 1</diffuse></material>
-        </visual>
-        <visual name="armchair_right_arm">
-          <pose>0.235 -0.02 0.02 0 0 0</pose>
-          <geometry><box><size>0.08 0.44 0.25</size></box></geometry>
-          <material><diffuse>0.54 0.27 0.16 1</diffuse></material>
-        </visual>
-      </link>
-    </model>
-
     <!-- A plant anchors the open south-west corner of the seating group. -->
     <model name="living_floor_plant">
       <static>true</static>
