@@ -60,7 +60,7 @@ def generate_launch_description():
             "gui_config": str(
                 package_share / "config" / "hotel_nav_gui.config"
             ),
-            "x": "-5.0",
+            "x": "-11.2",
             "y": "-3.5",
             "z": "0.0",
             "yaw": "0.0",

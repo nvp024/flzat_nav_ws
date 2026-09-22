@@ -62,6 +62,10 @@ def test_hotel_world_and_route_landmarks_are_local_assets():
     }
     assert {
         "hotel_floor",
+        "entry_corridor_floor",
+        "entry_corridor_north_wall",
+        "entry_corridor_south_wall",
+        "entry_corridor_end_wall",
         "indoor_dining_table",
         "lobby_sofa_west",
         "lobby_wall_clock",
@@ -85,6 +89,9 @@ def test_hotel_world_and_route_landmarks_are_local_assets():
         "bedroom_wardrobe",
         "bedroom_desk",
         "bedroom_desk_chair",
+        "bedroom_entry_fan",
+        "entry_suitcase",
+        "entry_umbrella_stand",
         "elevator_bank",
         "hotel_start_zone",
     }.issubset(model_names)
@@ -103,6 +110,47 @@ def test_hotel_world_and_route_landmarks_are_local_assets():
     assert kitchen_door_north - kitchen_door_south == pytest.approx(1.41)
     assert not root.findall(".//include")
     assert not root.findall(".//uri")
+
+
+def test_entry_corridor_has_a_wide_straight_route_from_spawn():
+    world = ET.parse(HOTEL_WORLD).getroot().find("./world")
+
+    def model(name):
+        result = world.find(f"./model[@name='{name}']")
+        assert result is not None
+        return result
+
+    def model_pose(name):
+        return tuple(float(value) for value in model(name).findtext("pose").split())
+
+    def wall_size(name):
+        value = model(name).findtext("./link/collision/geometry/box/size")
+        return tuple(float(component) for component in value.split())
+
+    corridor_floor = model("entry_corridor_floor")
+    floor_size = corridor_floor.findtext(
+        "./link/collision/geometry/plane/size"
+    )
+    assert model_pose("entry_corridor_floor") == pytest.approx(
+        (-9.925, -3.50, 0.0, 0.0, 0.0, 0.0)
+    )
+    assert tuple(float(value) for value in floor_size.split()) == pytest.approx(
+        (4.45, 2.50)
+    )
+    assert model_pose("hotel_start_zone")[:2] == pytest.approx((-11.2, -3.5))
+
+    upper_wall = model_pose("west_wall")
+    lower_wall = model_pose("west_wall_lower")
+    upper_edge = upper_wall[1] - (wall_size("west_wall")[1] / 2.0)
+    lower_edge = lower_wall[1] + (wall_size("west_wall_lower")[1] / 2.0)
+    assert upper_edge - lower_edge == pytest.approx(2.20)
+
+    north_inner_edge = model_pose("entry_corridor_north_wall")[1] - 0.15
+    south_inner_edge = model_pose("entry_corridor_south_wall")[1] + 0.15
+    assert north_inner_edge - south_inner_edge == pytest.approx(2.20)
+    assert model_pose("entry_corridor_end_wall")[:2] == pytest.approx(
+        (-12.15, -3.50)
+    )
 
 
 def test_living_room_and_bedroom_have_deliberate_clear_layouts():
@@ -185,7 +233,10 @@ def test_living_room_and_bedroom_have_deliberate_clear_layouts():
     desk_books = world.find("./model[@name='bedroom_desk_books']")
     assert desk_books is not None
     book_visuals = desk_books.findall("./link/visual")
-    assert len(book_visuals) == 7
+    assert len(book_visuals) == 5
+    assert model_pose("entry_suitcase")[:2] == pytest.approx((-4.40, -5.38))
+    assert model_pose("entry_umbrella_stand")[:2] == pytest.approx((-4.20, -1.80))
+    assert model_pose("bedroom_entry_fan")[:2] == pytest.approx((0.35, -2.75))
 
 
 def test_launches_reference_the_hotel_and_local_package():
@@ -194,7 +245,7 @@ def test_launches_reference_the_hotel_and_local_package():
     assert "openarm_skeleton_v1_2_description" in simulation
     assert "openarm_skeleton_v1_2_gazebo" in simulation
     assert "hotel_lobby_demo.sdf" in hotel
-    assert '"x": "-5.0"' in hotel
+    assert '"x": "-11.2"' in hotel
     assert '"y": "-3.5"' in hotel
     assert "demo_indoor_route.py" in hotel
     assert "hotel_nav_gui.config" in hotel

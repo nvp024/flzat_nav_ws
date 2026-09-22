@@ -29,6 +29,7 @@ from rclpy.utilities import remove_ros_args
 
 
 ROUTE = (
+    ("straight", 6.2),
     ("straight", 4.0),
     ("turn", math.pi / 2.0),
     ("straight", 2.0),

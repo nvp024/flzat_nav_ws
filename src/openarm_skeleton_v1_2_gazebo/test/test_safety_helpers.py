@@ -18,10 +18,11 @@ def _load(filename, name):
     return module
 
 
-def test_route_is_bounded_and_totals_nine_metres():
+def test_route_is_bounded_and_starts_through_the_entry_corridor():
     route = _load("demo_indoor_route.py", "indoor_route")
     assert route.validate_route(route.ROUTE) == route.ROUTE
-    assert route.route_linear_distance() == pytest.approx(9.0)
+    assert route.ROUTE[0] == ("straight", 6.2)
+    assert route.route_linear_distance() == pytest.approx(15.2)
     assert route.LINEAR_LIMIT == 0.30
     assert route.ANGULAR_LIMIT == 0.70
     assert route.wrap_angle(3.0 * math.pi) == pytest.approx(-math.pi)
