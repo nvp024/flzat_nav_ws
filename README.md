@@ -4,6 +4,10 @@ Workspace tự chứa cho robot `OpenArm Skeleton v1.2`, gồm URDF, 34 mesh STL
 Gazebo Harmonic, lidar 2D, camera RGB-D mô phỏng và bringup Nav2. Không source
 hoặc dùng package từ `sim-workspace`.
 
+Workspace cũng chứa package Isaac Sim tùy chọn được tích hợp từ workspace tham
+chiếu riêng. Package này vẫn build và chạy contract test khi máy không cài
+Isaac Sim; chỉ các phép thử runtime Isaac mới cần bộ cài simulator.
+
 ## 1. Nền tảng
 
 - Mục tiêu: Ubuntu 24.04 x86_64, ROS 2 Jazzy, Gazebo Harmonic.
@@ -72,6 +76,9 @@ rosdep install --from-paths src --ignore-src -r -y --rosdistro jazzy
 ./scripts/build_workspace.sh
 source install/setup.bash
 ```
+
+Build thông thường không tải, cài hoặc khởi động Isaac Sim. Hướng dẫn riêng và
+giới hạn kiểm chứng nằm tại `docs/ISAAC_SIM.md`.
 
 ## 4. Kiểm tra simulation cơ bản
 
@@ -247,6 +254,8 @@ nhất đều PASS; xem ngày và lệnh chính xác trong `docs/TEST_REPORT.md`
   hotel world và route demo.
 - `openarm_skeleton_v1_2_navigation`: Nav2, SLAM/localization, footprint và
   costmap configuration.
+- `openarm_skeleton_v1_2_isaac`: integration Isaac Sim tùy chọn; build/test
+  tĩnh không yêu cầu cài Isaac Sim.
 - `tools/prepare_model.py`: tái tạo URDF; thay đổi Gazebo/lidar phải sửa tại đây
   rồi chạy lại script.
 

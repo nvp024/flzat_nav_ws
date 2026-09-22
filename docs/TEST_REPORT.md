@@ -740,3 +740,37 @@ Shutdown: all launched processes finished cleanly
 Runtime dùng `ROS_DOMAIN_ID=211`, map seeded hotel và Gazebo partition
 `openarm_auto_initial_pose_acceptance`. Log ROS nằm tại
 `/tmp/openarm_auto_initial_pose_logs/2026-08-31-15-36-11-341997-phucnv-Vostro-3580-67151`.
+
+## Isaac package migration — 2026-09-22
+
+Package Isaac, hai wrapper script và tài liệu được tạo thành bản sao trong
+workspace OpenArm chính, giữ nguyên tên file từ workspace tham chiếu. Không
+file nào bị di chuyển khỏi workspace nguồn và không ghi đè package Gazebo,
+description hoặc navigation hiện tại.
+
+Các thay đổi tương thích tối thiểu:
+
+- Isaac URDF preparer chấp nhận base profile hiện tại `38 links / 37 joints`
+  và kiểm tra thêm `camera_optical_frame`;
+- navigation launch mặc định `CLOSED_LOOP` cho Gazebo và cho phép Isaac chọn
+  `OPEN_LOOP` qua launch argument;
+- localization launch Isaac dùng literal Python `False` tương thích Nav2
+  Jazzy.
+
+Validation không cài, tải hoặc khởi động Isaac Sim:
+
+```bash
+source /opt/ros/jazzy/setup.bash
+./scripts/build_workspace.sh
+source install/setup.bash
+PYTEST_DISABLE_PLUGIN_AUTOLOAD=1 colcon test \
+  --event-handlers console_direct+
+colcon test-result --verbose
+```
+
+```text
+Build: 4 packages finished
+Tests: 50 tests, 0 errors, 0 failures, 0 skipped
+Isaac runtime: not run on this host
+Gazebo runtime: not rerun; existing Gazebo source was preserved
+```

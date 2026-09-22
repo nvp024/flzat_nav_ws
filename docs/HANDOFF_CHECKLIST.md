@@ -2,7 +2,7 @@
 
 ## Người đóng gói
 
-- [ ] `./scripts/build_workspace.sh` hoàn tất 3 package.
+- [ ] `./scripts/build_workspace.sh` hoàn tất 4 package.
 - [ ] `colcon test-result --verbose` báo 0 lỗi.
 - [ ] Hotel headless có dòng `INDOOR ROUTE PASS`.
 - [ ] Skeleton demo có dòng `Skeleton lift demo PASS`.
@@ -31,7 +31,7 @@
 ## Kết quả bàn giao chuẩn
 
 ```text
-Build: 3 packages finished
+Build: 4 packages finished
 Tests: 0 errors, 0 failures
 Hotel: INDOOR ROUTE PASS
 Skeleton: Skeleton lift demo PASS

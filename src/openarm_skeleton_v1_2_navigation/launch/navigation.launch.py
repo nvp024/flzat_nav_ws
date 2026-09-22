@@ -27,6 +27,9 @@ def generate_launch_description():
     params_file = LaunchConfiguration("params_file")
     use_sim_time = LaunchConfiguration("use_sim_time")
     autostart = LaunchConfiguration("autostart")
+    velocity_smoother_feedback = LaunchConfiguration(
+        "velocity_smoother_feedback"
+    )
     common_parameters = [params_file, {"use_sim_time": use_sim_time}]
 
     smoothed_nav_to_pose_bt = str(
@@ -54,6 +57,15 @@ def generate_launch_description():
         [
             DeclareLaunchArgument("use_sim_time", default_value="true"),
             DeclareLaunchArgument("autostart", default_value="true"),
+            DeclareLaunchArgument(
+                "velocity_smoother_feedback",
+                default_value="CLOSED_LOOP",
+                description=(
+                    "Velocity smoother feedback mode. Isaac uses OPEN_LOOP "
+                    "because its computed odometry twist is not expressed "
+                    "consistently in the planar base axes."
+                ),
+            ),
             DeclareLaunchArgument(
                 "params_file",
                 default_value=str(package_share / "config" / "nav2_params.yaml"),
@@ -95,6 +107,7 @@ def generate_launch_description():
                     ("cmd_vel", "cmd_vel_nav"),
                     ("cmd_vel_smoothed", "cmd_vel"),
                 ],
+                extra_parameters={"feedback": velocity_smoother_feedback},
             ),
             Node(
                 package="nav2_lifecycle_manager",

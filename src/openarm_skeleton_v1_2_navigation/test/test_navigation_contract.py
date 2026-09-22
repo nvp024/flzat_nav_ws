@@ -67,6 +67,9 @@ def test_velocity_chain_keeps_the_independent_watchdog_boundary():
     launch = NAVIGATION_LAUNCH.read_text(encoding="utf-8")
     assert '("cmd_vel", "cmd_vel_nav")' in launch
     assert '("cmd_vel_smoothed", "cmd_vel")' in launch
+    assert '"velocity_smoother_feedback"' in launch
+    assert 'default_value="CLOSED_LOOP"' in launch
+    assert 'extra_parameters={"feedback": velocity_smoother_feedback}' in launch
     params = _params()
     for node in ("controller_server", "behavior_server", "velocity_smoother"):
         assert params[node]["ros__parameters"]["enable_stamped_cmd_vel"] is False
