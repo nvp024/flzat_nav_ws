@@ -96,7 +96,9 @@ Scene nhà hàng:
 bao gồm hành lang spawn, tường, phòng khách, bếp, phòng ngủ và các object hiện
 tại. Loader giữ visual/collision riêng, hỗ trợ box, cylinder, sphere và plane,
 đồng thời đổi toàn bộ pose từ Gazebo world sang frame khởi đầu SLAM tại robot.
-Nhờ đó map đã quét từ Gazebo có thể dùng cho Isaac nếu SDF không đổi.
+Các plane nền trong SDF không được tạo trong scene hotel; một ground collider
+vô hình của Isaac vẫn đỡ robot. Nhờ đó map đã quét từ Gazebo có thể dùng cho
+Isaac nếu SDF không đổi.
 Restaurant có khu bếp/quầy phục vụ, bục đón khách và bốn cụm bàn ghế, vẫn là
 scene primitive nhẹ độc lập. Hai scene chưa phải asset photorealistic.
 

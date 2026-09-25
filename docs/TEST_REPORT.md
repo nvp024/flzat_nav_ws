@@ -789,6 +789,10 @@ spawn cố định `(-11.2, -3.5, 0)`. Parser đọc được 215 primitive: 168
 47 collision. Biên tâm primitive sau phép đổi là `x=-0.95..19.05 m`,
 `y=-2.35..9.35 m`, phù hợp biên saved map ghi trong log Mode 2.
 
+Plane nền vẫn được parser kiểm tra nhưng không được tạo trong scene hotel.
+Isaac giữ một ground collider vô hình, nên nền không hiển thị nhưng robot vẫn
+có tiếp xúc vật lý và không rơi khỏi scene.
+
 Validation trên host không cài/chạy Isaac Sim:
 
 ```text

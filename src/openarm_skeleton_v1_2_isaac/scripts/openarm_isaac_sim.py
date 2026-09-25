@@ -186,8 +186,10 @@ def _add_sdf_primitive(
     fixed_sphere,
 ):
     """Instantiate one parsed SDF primitive with its original role."""
-    if primitive.role == "collision" and primitive.shape == "plane":
-        return
+    # Do not duplicate or render the SDF floor. The hotel scene keeps one
+    # invisible Isaac ground collider for robot contact physics instead.
+    if primitive.shape == "plane":
+        return False
 
     visible = primitive.role == "visual"
     common = {
@@ -197,7 +199,7 @@ def _add_sdf_primitive(
         "orientation": np.array(primitive.orientation),
         "color": np.array(primitive.color),
     }
-    if primitive.shape in {"box", "plane"}:
+    if primitive.shape == "box":
         object_type = visual_cuboid if visible else fixed_cuboid
         scene_object = object_type(
             **common,
@@ -224,6 +226,7 @@ def _add_sdf_primitive(
             f"unsupported parsed hotel primitive: {primitive.shape}"
         )
     world.scene.add(scene_object)
+    return True
 
 
 def _create_scene(
@@ -238,11 +241,13 @@ def _create_scene(
     fixed_cylinder,
     fixed_sphere,
 ):
-    world.scene.add_default_ground_plane()
+    ground_plane = world.scene.add_default_ground_plane()
     if scene_name == "hotel":
+        ground_plane.set_visibility(False)
         primitives = load_hotel_primitives(hotel_world)
+        created = 0
         for primitive in primitives:
-            _add_sdf_primitive(
+            created += _add_sdf_primitive(
                 world,
                 primitive,
                 np,
@@ -253,7 +258,7 @@ def _create_scene(
                 fixed_cylinder,
                 fixed_sphere,
             )
-        return len(primitives)
+        return created
 
     for item in get_scene_objects(scene_name):
         name = item["name"]

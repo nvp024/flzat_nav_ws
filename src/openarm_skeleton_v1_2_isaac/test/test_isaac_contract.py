@@ -212,6 +212,8 @@ def test_simulator_selects_and_reports_requested_scene():
     assert "VisualCuboid" in source
     assert "FixedCylinder" in source
     assert "FixedSphere" in source
+    assert 'if primitive.shape == "plane":' in source
+    assert "ground_plane.set_visibility(False)" in source
     assert 'print(f"  scene: {args.scene}", flush=True)' in source
 
 
